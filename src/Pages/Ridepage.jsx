@@ -138,7 +138,7 @@ function RidePage({ showRideSheet, setShowRideSheet }) {
     <>
       <div className="map-section">
         {position && (
-          <MapContainer zoom={17} zoomControl={false} className="map">
+          <MapContainer zoom={13} zoomControl={false} className="map">
             <RecenterMap
               position={position}
               hasCentered={hasCentered}
