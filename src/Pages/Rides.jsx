@@ -8,6 +8,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import useActiveRide from "../hooks/useActiveRide";
 import useRideTracking from "../hooks/useRideTracking";
+import socket from "../socket";
 
 function Rides() {
   const { id: rideId } = useParams();
