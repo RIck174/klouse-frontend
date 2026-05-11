@@ -39,17 +39,20 @@ function Registration() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-        body: JSON.stringify({
-          username: loginData.username,
-          password: loginData.password,
-        }),
-      });
+          body: JSON.stringify({
+            username: loginData.username,
+            password: loginData.password,
+          }),
+        },
+      );
 
       const data = await response.json();
       if (response.ok) {
@@ -71,15 +74,18 @@ function Registration() {
       const user = result.user;
 
       // Send the Google user to your backend to create/find account
-      const response = await fetch("http://localhost:5000/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: user.displayName,
-          email: user.email,
-          googleId: user.uid,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/google`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: user.displayName,
+            email: user.email,
+            googleId: user.uid,
+          }),
+        },
+      );
 
       const data = await response.json();
       if (response.ok) {
@@ -97,17 +103,20 @@ function Registration() {
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: registerData.username,
+            email: registerData.email,
+            password: registerData.password,
+          }),
         },
-        body: JSON.stringify({
-          username: registerData.username,
-          email: registerData.email,
-          password: registerData.password,
-        }),
-      });
+      );
 
       const data = await response.json();
       if (response.ok) {

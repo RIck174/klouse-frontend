@@ -7,7 +7,7 @@ import "../Css/Homepage.css";
 import "../Css/Activitypage.css";
 import "boxicons/css/boxicons.min.css";
 
-const API = "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL;
 
 function Activity() {
   const [rides, setRides] = useState([]);

@@ -6,7 +6,7 @@ import socket from "../socket";
 import "../Css/Driverpage.css";
 import "boxicons/css/boxicons.min.css";
 
-const API = "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL;
 
 function LiveCenter({ position }) {
   const map = useMap();

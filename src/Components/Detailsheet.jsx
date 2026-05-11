@@ -151,17 +151,20 @@ function Detailsheet({
         return alert("Please pick a destination");
       }
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/ride/request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/ride/request`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            destination: [destination[1], destination[0]],
+            destinationName: destinationName,
+          }),
         },
-        body: JSON.stringify({
-          destination: [destination[1], destination[0]],
-          destinationName: destinationName,
-        }),
-      });
+      );
       const data = await response.json();
       console.log("response: ", data);
 

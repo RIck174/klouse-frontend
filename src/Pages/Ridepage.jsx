@@ -16,7 +16,7 @@ import "../Css/Homepage.css";
 import socket from "../socket";
 import useActiveRide from "../hooks/useActiveRide";
 
-const API = "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL;
 
 //Centering the map
 function RecenterMap({ position, hasCentered, setHasCentered }) {
@@ -96,7 +96,7 @@ function RidePage({ showRideSheet, setShowRideSheet }) {
     const sendLocationToBackend = async () => {
       try {
         const token = localStorage.getItem("token");
-        await fetch("http://localhost:5000/user/location", {
+        await fetch(`${import.meta.env.VITE_API_URL}/user/location`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

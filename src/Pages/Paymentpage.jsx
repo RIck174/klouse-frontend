@@ -4,7 +4,7 @@ import "boxicons/css/boxicons.min.css";
 import "../Css/Homepage.css";
 import "../Css/Paymentpage.css";
 
-const API = "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL;
 
 const PAYMENT_METHODS = [
   {

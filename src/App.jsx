@@ -26,7 +26,7 @@ const PRoutes = ({ children }) => {
       }
 
       try {
-        const res = await fetch("http://localhost:5000/auth/verify", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/verify`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

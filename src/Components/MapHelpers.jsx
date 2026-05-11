@@ -19,7 +19,7 @@ export function ShowRoute({ pickup, destination }) {
     const fetchRoute = async () => {
       try {
         const token = localStorage.getItem("token"); // get token here
-        const res = await fetch("http://localhost:5000/ride/route", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/ride/route`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

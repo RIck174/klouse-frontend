@@ -43,9 +43,12 @@ function Rides() {
     const fetchRide = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/ride/${rideId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/ride/${rideId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         if (!res.ok) return;
         const data = await res.json();
         setRide(data);
@@ -68,7 +71,7 @@ function Rides() {
   const cancelRide = async () => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`http://localhost:5000/ride/cancel/${rideId}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/ride/cancel/${rideId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
