@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useMap, Polyline } from "react-leaflet";
 
 export function FitBounds({ pickup, destination }) {
@@ -14,12 +14,16 @@ export function FitBounds({ pickup, destination }) {
 export function ShowRoute({ pickup, destination }) {
   const map = useMap();
   const [route, setRoute] = useState(null);
+  const hasFit = useRef(false);
 
   useEffect(() => {
-    let interval;
+    hasFit.current = false; // reset if pickup/destination changes
+  }, [pickup, destination]);
+
+  useEffect(() => {
     const fetchRoute = async () => {
       try {
-        const token = localStorage.getItem("token"); // get token here
+        const token = localStorage.getItem("token");
         const res = await fetch(`${import.meta.env.VITE_API_URL}/ride/route`, {
           method: "POST",
           headers: {
@@ -36,18 +40,22 @@ export function ShowRoute({ pickup, destination }) {
           ([lng, lat]) => [lat, lng],
         );
         setRoute(coords);
-        map.fitBounds(coords, { padding: [30, 30] });
+
+        // Only fit bounds once per new route
+        if (!hasFit.current) {
+          map.fitBounds(coords, { padding: [30, 30] });
+          hasFit.current = true;
+        }
       } catch (err) {
         console.error("Route fetch failed", err);
       }
     };
     fetchRoute();
-    return () => clearInterval(interval);
   }, [map, pickup, destination]);
 
   if (!route) return null;
 
   return (
-    <Polyline positions={route} color="#1a1a2e" weight={6} opacity={0.8} />
+    <Polyline positions={route} color="#1a56db" weight={5} opacity={0.85} />
   );
 }

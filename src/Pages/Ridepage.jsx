@@ -246,7 +246,7 @@ function RidePage({ showRideSheet, setShowRideSheet, onMenuClick }) {
           <div className="panel-handle" />
           <p className="panel-greeting">
             {greeting()}
-            {userProfile?.username ? `, ${userProfile.username}` : ""} 👋
+            {userProfile?.username ? `, ${userProfile.username}` : ""}
           </p>
           <div
             className="panel-search-bar"
