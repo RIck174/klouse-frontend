@@ -27,7 +27,7 @@ function RecenterMap({ position, hasCentered, setHasCentered }) {
       // Start zoomed out at Ghana level, then fly in
       map.setView([7.9465, -1.0232], 6);
       setTimeout(() => {
-        map.flyTo(position, 15, {
+        map.flyTo(position, 17, {
           duration: 2.5,
           easeLinearity: 0.25,
         });
