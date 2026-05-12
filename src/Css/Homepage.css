@@ -173,8 +173,11 @@ body,
     border-top-right-radius: 24px;
     padding: 8px 20px 36px;
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: transform 0.2s ease;
+    height: 160px;
+    /* fixed height — can't scroll up */
+    overflow: hidden;
+    /* prevents any scroll */
+    cursor: default;
 }
 
 .home-bottom-panel:active {

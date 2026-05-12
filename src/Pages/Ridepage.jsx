@@ -137,8 +137,8 @@ function RidePage({ showRideSheet, setShowRideSheet, onMenuClick }) {
   }, [navigate]);
 
   const getInitials = () => {
-    if (!userProfile?.username) return "?";
-    return userProfile.username.slice(0, 2).toUpperCase();
+    if (!userProfile?.email) return "?";
+    return userProfile.email.slice(0, 2).toUpperCase();
   };
 
   const greeting = () => {
@@ -237,24 +237,27 @@ function RidePage({ showRideSheet, setShowRideSheet, onMenuClick }) {
       </div>
 
       {/* Always-peeking bottom panel */}
-      <div className="home-bottom-panel" onClick={() => setShowRideSheet(true)}>
+      <div className="home-bottom-panel">
         <div className="panel-handle" />
         <p className="panel-greeting">
           {greeting()}
           {userProfile?.username ? `, ${userProfile.username}` : ""} 👋
         </p>
-        <div className="panel-search-bar">
+        <div
+          className="panel-search-bar"
+          onClick={() => setShowRideSheet(true)}
+        >
           <i className="bx bxs-map panel-search-icon" />
           <span className="panel-search-placeholder">Where to?</span>
         </div>
         <div className="panel-chips">
           {JSON.parse(localStorage.getItem("savedHome") || "null") && (
-            <div className="panel-chip">
+            <div className="panel-chip" onClick={() => setShowRideSheet(true)}>
               <i className="bx bxs-home" /> Home
             </div>
           )}
           {JSON.parse(localStorage.getItem("savedWork") || "null") && (
-            <div className="panel-chip">
+            <div className="panel-chip" onClick={() => setShowRideSheet(true)}>
               <i className="bx bxs-briefcase" /> Work
             </div>
           )}
