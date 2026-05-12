@@ -23,9 +23,16 @@ function RecenterMap({ position, hasCentered, setHasCentered }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!hasCentered) {
-      map.setView(position, 15);
-      setHasCentered(true);
+    if (position && !hasCentered) {
+      // Start zoomed out at Ghana level, then fly in
+      map.setView([7.9465, -1.0232], 6);
+      setTimeout(() => {
+        map.flyTo(position, 15, {
+          duration: 2.5,
+          easeLinearity: 0.25,
+        });
+        setHasCentered(true);
+      }, 500);
     }
   }, [position, hasCentered, map, setHasCentered]);
 
@@ -138,7 +145,18 @@ function RidePage({ showRideSheet, setShowRideSheet }) {
     <>
       <div className="map-section">
         {position && (
-          <MapContainer zoom={10} zoomControl={false} className="map">
+          <MapContainer
+            zoom={6}
+            center={[7.9465, -1.0232]}
+            zoomControl={false}
+            className="map"
+            minZoom={6}
+            maxBounds={[
+              [4.5, -3.5], // Southwest corner of Ghana
+              [11.5, 1.5], // Northeast corner of Ghana
+            ]}
+            maxBoundsViscosity={1.0}
+          >
             <RecenterMap
               position={position}
               hasCentered={hasCentered}
