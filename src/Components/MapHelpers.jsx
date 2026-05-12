@@ -1,5 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useMap, Polyline } from "react-leaflet";
+
+const fittedDestinations = new Set();
 
 export function FitBounds({ pickup, destination }) {
   const map = useMap();
@@ -10,9 +12,6 @@ export function FitBounds({ pickup, destination }) {
   }, [map, pickup, destination]);
   return null;
 }
-
-// This lives OUTSIDE the component — survives re-renders
-const fittedRoutes = new Set();
 
 export function ShowRoute({ pickup, destination }) {
   const map = useMap();
@@ -39,13 +38,11 @@ export function ShowRoute({ pickup, destination }) {
         );
         setRoute(coords);
 
-        // Create a unique key for this pickup+destination pair
-        const routeKey = `${pickup[0]},${pickup[1]}-${destination[0]},${destination[1]}`;
-
-        // Only fitBounds if we haven't done it for this exact route before
-        if (!fittedRoutes.has(routeKey)) {
+        // Key is ONLY the destination — pickup moving won't retrigger fit
+        const destKey = `${destination[0]},${destination[1]}`;
+        if (!fittedDestinations.has(destKey)) {
           map.fitBounds(coords, { padding: [30, 30] });
-          fittedRoutes.add(routeKey);
+          fittedDestinations.add(destKey);
         }
       } catch (err) {
         console.error("Route fetch failed", err);
