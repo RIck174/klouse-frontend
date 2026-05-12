@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from "react";
-import Navigation from "../Components/Navigation";
 import { ShowRoute } from "../Components/MapHelpers";
 import "../Css/Homepage.css";
 import "../Css/Rides.css";
@@ -81,7 +80,6 @@ function Rides() {
   if (!rideId) {
     return (
       <div className="rides-container">
-        <Navigation />
         <div className="no-ride-overlay">
           <i
             className="bx bxs-car"
