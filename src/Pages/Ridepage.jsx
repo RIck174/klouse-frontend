@@ -182,7 +182,12 @@ function RidePage({ showRideSheet, setShowRideSheet, onMenuClick }) {
             {destination && (
               <ShowRoute pickup={position} destination={destination} />
             )}
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              tileSize={512}
+              zoomOffset={-1}
+              detectRetina={true}
+            />
           </MapContainer>
         )}
       </div>

@@ -113,7 +113,12 @@ function Rides() {
           zoomControl={false}
           style={{ height: "100vh", width: "100%" }}
         >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            tileSize={512}
+            zoomOffset={-1}
+            detectRetina={true}
+          />
 
           <Marker position={userPosition} />
           {pickupLatLng && <Marker position={pickupLatLng} />}

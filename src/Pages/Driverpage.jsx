@@ -224,7 +224,12 @@ function DriverPage() {
             zoomControl={false}
             style={{ height: "100%", width: "100%" }}
           >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              tileSize={512}
+              zoomOffset={-1}
+              detectRetina={true}
+            />
             <LiveCenter position={driverPosition} />
             <Marker position={driverPosition}>
               <Popup>You are here</Popup>

@@ -209,7 +209,12 @@ function Activity() {
                   dragging={false}
                   scrollWheelZoom={false}
                 >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    tileSize={512}
+                    zoomOffset={-1}
+                    detectRetina={true}
+                  />
                   <ShowRoute
                     pickup={[
                       lastRide.pickup.coordinates[1],
