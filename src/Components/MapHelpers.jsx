@@ -37,10 +37,6 @@ export function ShowRoute({ pickup, destination }) {
         );
         setRoute(coords);
         map.fitBounds(coords, { padding: [30, 30] });
-
-        interval = setInterval(() => {
-          map.fitBounds(coords, { padding: [30, 30] }); // every 15s
-        }, 15000);
       } catch (err) {
         console.error("Route fetch failed", err);
       }
