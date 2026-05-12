@@ -11,14 +11,12 @@ export function FitBounds({ pickup, destination }) {
   return null;
 }
 
+// This lives OUTSIDE the component — survives re-renders
+const fittedRoutes = new Set();
+
 export function ShowRoute({ pickup, destination }) {
   const map = useMap();
   const [route, setRoute] = useState(null);
-  const hasFit = useRef(false);
-
-  useEffect(() => {
-    hasFit.current = false; // reset if pickup/destination changes
-  }, [pickup, destination]);
 
   useEffect(() => {
     const fetchRoute = async () => {
@@ -41,10 +39,13 @@ export function ShowRoute({ pickup, destination }) {
         );
         setRoute(coords);
 
-        // Only fit bounds once per new route
-        if (!hasFit.current) {
+        // Create a unique key for this pickup+destination pair
+        const routeKey = `${pickup[0]},${pickup[1]}-${destination[0]},${destination[1]}`;
+
+        // Only fitBounds if we haven't done it for this exact route before
+        if (!fittedRoutes.has(routeKey)) {
           map.fitBounds(coords, { padding: [30, 30] });
-          hasFit.current = true;
+          fittedRoutes.add(routeKey);
         }
       } catch (err) {
         console.error("Route fetch failed", err);
