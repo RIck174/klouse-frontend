@@ -16,6 +16,7 @@ export function ShowRoute({ pickup, destination }) {
   const [route, setRoute] = useState(null);
 
   useEffect(() => {
+    let interval;
     const fetchRoute = async () => {
       try {
         const token = localStorage.getItem("token"); // get token here
@@ -36,12 +37,17 @@ export function ShowRoute({ pickup, destination }) {
         );
         setRoute(coords);
         map.fitBounds(coords, { padding: [30, 30] });
+
+        interval = setInterval(() => {
+          map.fitBounds(coords, { padding: [30, 30] }); // every 15s
+        }, 15000);
       } catch (err) {
         console.error("Route fetch failed", err);
       }
     };
     fetchRoute();
-  }, [[pickup, destination]]);
+    return () => clearInterval(interval);
+  }, [map, pickup, destination]);
 
   if (!route) return null;
 

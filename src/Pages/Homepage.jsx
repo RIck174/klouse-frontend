@@ -1,11 +1,12 @@
 import { useLocation } from "react-router-dom";
 import "../Css/Homepage.css";
 import { useState, useEffect } from "react";
-import Navigation from "../Components/Navigation";
+import Sidebar from "../Components/Sidebar";
 import Ridepage from "./Ridepage";
 
 function Homepage() {
   const [showRideSheet, setShowRideSheet] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -16,11 +17,11 @@ function Homepage() {
 
   return (
     <div className="homepage-container">
-      <Navigation />
-
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <Ridepage
         showRideSheet={showRideSheet}
         setShowRideSheet={setShowRideSheet}
+        onMenuClick={() => setSidebarOpen(true)}
       />
     </div>
   );

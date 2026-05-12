@@ -295,7 +295,19 @@ function DriverPage() {
             <div className="request-actions">
               <button
                 className="btn-decline"
-                onClick={() => setPendingRide(null)}
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    const rideId = pendingRide.rideId || pendingRide._id;
+                    await fetch(`${API}/ride/decline/${rideId}`, {
+                      method: "POST",
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                  } catch (err) {
+                    console.error("Failed to decline ride", err);
+                  }
+                  setPendingRide(null);
+                }}
               >
                 Decline
               </button>

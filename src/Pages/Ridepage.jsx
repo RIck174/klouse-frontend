@@ -11,20 +11,16 @@ import { ShowRoute } from "../Components/MapHelpers";
 import { useNavigate } from "react-router-dom";
 import Detailsheet from "../Components/Detailsheet";
 import "leaflet/dist/leaflet.css";
-
 import "../Css/Homepage.css";
 import socket from "../socket";
 import useActiveRide from "../hooks/useActiveRide";
 
 const API = import.meta.env.VITE_API_URL;
 
-//Centering the map
 function RecenterMap({ position, hasCentered, setHasCentered }) {
   const map = useMap();
-
   useEffect(() => {
     if (position && !hasCentered) {
-      // Start zoomed out at Ghana level, then fly in
       map.setView([7.9465, -1.0232], 6);
       setTimeout(() => {
         map.flyTo(position, 17, {
@@ -35,7 +31,6 @@ function RecenterMap({ position, hasCentered, setHasCentered }) {
       }, 500);
     }
   }, [position, hasCentered, map, setHasCentered]);
-
   return null;
 }
 
@@ -48,71 +43,73 @@ function LocationMarker({ setDestination }) {
   return null;
 }
 
-function RidePage({ showRideSheet, setShowRideSheet }) {
+function RidePage({ showRideSheet, setShowRideSheet, onMenuClick }) {
   const [position, setPosition] = useState(null);
   const [destination, setDestination] = useState(null);
   const [hasCentered, setHasCentered] = useState(false);
   const [destinationName, setDestinationName] = useState("");
+  const [vehicleType, setVehicleType] = useState("Car");
+  const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
-
   const lastSentPosition = useRef(null);
 
-  // Check for active ride on mount
   useActiveRide(null);
 
-  //getting user location
+  // Fetch user profile for name/avatar
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/user/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setUserProfile(data);
+      } catch (err) {
+        console.log("Failed to fetch profile");
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Watch user location
   useEffect(() => {
     const watcher = navigator.geolocation.watchPosition(
       (location) => {
         const lat = location.coords.latitude;
         const lng = location.coords.longitude;
-
         setPosition([lat, lng]);
-
         console.log("Current position:", lat, lng);
-        console.log("Accuracy: ", location.coords.accuracy);
+        console.log("Accuracy:", location.coords.accuracy);
       },
-      (error) => {
-        console.log("Could not get location, using default", error);
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 10000,
-      },
+      (error) => console.log("Could not get location, using default", error),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 },
     );
     return () => navigator.geolocation.clearWatch(watcher);
   }, []);
 
-  //  Send location to backend
-  // Only sends if user has moved more than ~10 metres
+  // Send location to backend (only if moved >10m)
   useEffect(() => {
     if (!position) return;
-
     if (lastSentPosition.current) {
       const [lastLat, lastLng] = lastSentPosition.current;
-      const movedLat = Math.abs(position[0] - lastLat);
-      const movedLng = Math.abs(position[1] - lastLng);
-
-      // 0.0001 degrees ≈ 10 metres
-      if (movedLat < 0.0001 && movedLng < 0.0001) return;
+      if (
+        Math.abs(position[0] - lastLat) < 0.0001 &&
+        Math.abs(position[1] - lastLng) < 0.0001
+      )
+        return;
     }
-
     lastSentPosition.current = position;
-
     const sendLocationToBackend = async () => {
       try {
         const token = localStorage.getItem("token");
-        await fetch(`${import.meta.env.VITE_API_URL}/user/location`, {
+        await fetch(`${API}/user/location`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            lat: position[0],
-            lng: position[1],
-          }),
+          body: JSON.stringify({ lat: position[0], lng: position[1] }),
         });
       } catch (err) {
         console.log("Failed to send location");
@@ -121,7 +118,7 @@ function RidePage({ showRideSheet, setShowRideSheet }) {
     sendLocationToBackend();
   }, [position]);
 
-  // Register user socket
+  // Register socket
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -136,13 +133,24 @@ function RidePage({ showRideSheet, setShowRideSheet }) {
       socket.emit("rideRoom", data.rideId);
       navigate(`/rides/${data.rideId}`);
     });
-    return () => {
-      socket.off("rideAccepted");
-    };
+    return () => socket.off("rideAccepted");
   }, [navigate]);
+
+  const getInitials = () => {
+    if (!userProfile?.username) return "?";
+    return userProfile.username.slice(0, 2).toUpperCase();
+  };
+
+  const greeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
 
   return (
     <>
+      {/* Map */}
       <div className="map-section">
         {position && (
           <MapContainer
@@ -152,8 +160,8 @@ function RidePage({ showRideSheet, setShowRideSheet }) {
             className="map"
             minZoom={6}
             maxBounds={[
-              [4.5, -3.5], // Southwest corner of Ghana
-              [11.5, 1.5], // Northeast corner of Ghana
+              [4.5, -3.5],
+              [11.5, 1.5],
             ]}
             maxBoundsViscosity={1.0}
           >
@@ -163,35 +171,98 @@ function RidePage({ showRideSheet, setShowRideSheet }) {
               setHasCentered={setHasCentered}
             />
             <LocationMarker setDestination={setDestination} />
-
             <Marker position={position}>
               <Popup>Your pickup location</Popup>
             </Marker>
-
             {destination && (
               <Marker position={destination}>
                 <Popup>{destinationName || "Destination"}</Popup>
               </Marker>
             )}
-
             {destination && (
               <ShowRoute pickup={position} destination={destination} />
             )}
-
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           </MapContainer>
         )}
       </div>
 
-      <div className="ride-btn" onClick={() => setShowRideSheet(true)}>
-        <button className="btn">Request Ride</button>
+      {/* Floating top controls */}
+      <div className="floating-top">
+        <button className="float-btn float-menu" onClick={onMenuClick}>
+          <i className="bx bx-menu" />
+        </button>
+
+        <div className="vehicle-toggle">
+          <div
+            className="toggle-slider"
+            style={{
+              transform:
+                vehicleType === "Car" ? "translateX(0)" : "translateX(100%)",
+            }}
+          />
+          <button
+            className={`toggle-opt ${vehicleType === "Car" ? "toggle-opt-active" : ""}`}
+            onClick={() => setVehicleType("Car")}
+          >
+            <i className="bx bxs-car" /> Car
+          </button>
+          <button
+            className={`toggle-opt ${vehicleType === "Motorbike" ? "toggle-opt-active" : ""}`}
+            onClick={() => setVehicleType("Motorbike")}
+          >
+            <i className="bx bxs-cycling" /> Moto
+          </button>
+        </div>
+
+        <div
+          className="float-btn float-avatar"
+          onClick={() => navigate("/settings")}
+        >
+          {userProfile?.profileImage ? (
+            <img
+              src={userProfile.profileImage}
+              alt="avatar"
+              className="avatar-img-small"
+            />
+          ) : (
+            <span className="avatar-initials">{getInitials()}</span>
+          )}
+        </div>
       </div>
+
+      {/* Always-peeking bottom panel */}
+      <div className="home-bottom-panel" onClick={() => setShowRideSheet(true)}>
+        <div className="panel-handle" />
+        <p className="panel-greeting">
+          {greeting()}
+          {userProfile?.username ? `, ${userProfile.username}` : ""} 👋
+        </p>
+        <div className="panel-search-bar">
+          <i className="bx bxs-map panel-search-icon" />
+          <span className="panel-search-placeholder">Where to?</span>
+        </div>
+        <div className="panel-chips">
+          {JSON.parse(localStorage.getItem("savedHome") || "null") && (
+            <div className="panel-chip">
+              <i className="bx bxs-home" /> Home
+            </div>
+          )}
+          {JSON.parse(localStorage.getItem("savedWork") || "null") && (
+            <div className="panel-chip">
+              <i className="bx bxs-briefcase" /> Work
+            </div>
+          )}
+        </div>
+      </div>
+
       <Detailsheet
         showRideSheet={showRideSheet}
         setShowRideSheet={setShowRideSheet}
         position={position}
         destination={destination}
         setDestination={setDestination}
+        vehicleType={vehicleType}
       />
     </>
   );

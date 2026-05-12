@@ -8,56 +8,46 @@ function Detailsheet({
   position,
   destination,
   setDestination,
+  vehicleType,
 }) {
-  const [pickupName, setPickupName] = useState("");
   const [destinationName, setDestinationName] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [estimatedFare, setEstimatedFare] = useState(null);
   const [estimatedDistance, setEstimatedDistance] = useState(null);
-  const [driverName, setDriverName] = useState(null);
+  const [estimatedTime, setEstimatedTime] = useState(null);
+  const [recentDestinations, setRecentDestinations] = useState([]);
+  const [savedPlaces, setSavedPlaces] = useState({ home: null, work: null });
+  const [notes, setNotes] = useState("");
   const navigate = useNavigate();
   const debounceTimer = useRef(null);
   const fromSuggestion = useRef(false);
 
-  //geting pickupname
+  // Load recent destinations and saved places from localStorage
   useEffect(() => {
-    if (!position) return;
+    const recent = JSON.parse(
+      localStorage.getItem("recentDestinations") || "[]",
+    );
+    setRecentDestinations(recent);
+    const home = JSON.parse(localStorage.getItem("savedHome") || "null");
+    const work = JSON.parse(localStorage.getItem("savedWork") || "null");
+    setSavedPlaces({ home, work });
+  }, [showRideSheet]);
 
-    const fetchAddress = async () => {
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position[0]}&lon=${position[1]}`,
-        );
-        const data = await res.json();
-        setPickupName(data.name);
-        if (!data.name) {
-          setPickupName(data.address.suburb);
-        }
-      } catch (err) {
-        console.log("Failed to fetch address");
-      }
-    };
-
-    fetchAddress();
-  }, [position]);
-
-  //getting destination name
+  // Getting destination name from map tap
   useEffect(() => {
     if (!destination) return;
     if (fromSuggestion.current) {
       fromSuggestion.current = false;
       return;
     }
-
     const fetchAddress = async () => {
       try {
         const res = await fetch(
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${destination[0]}&lon=${destination[1]}`,
         );
-
         const data = await res.json();
-        const name = data.name || data.address.suburb;
+        const name = data.name || data.address?.suburb || "Selected location";
         setDestinationName(name);
         setSuggestions([]);
       } catch (err) {
@@ -67,11 +57,10 @@ function Detailsheet({
     fetchAddress();
   }, [destination]);
 
+  // Distance/fare/ETA calculation
   useEffect(() => {
     if (!position || !destination) return;
-
-    // Rough distance using Haversine formula
-    const R = 6371; // Earth radius in km
+    const R = 6371;
     const dLat = ((destination[0] - position[0]) * Math.PI) / 180;
     const dLon = ((destination[1] - position[1]) * Math.PI) / 180;
     const a =
@@ -81,75 +70,76 @@ function Detailsheet({
         Math.sin(dLon / 2) *
         Math.sin(dLon / 2);
     const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
     setEstimatedDistance(distKm.toFixed(1));
-    setEstimatedFare((5 + distKm * 2.5).toFixed(2)); // GH₵5 base + GH₵2.5/km
+    setEstimatedFare((5 + distKm * 2.5).toFixed(2));
+    setEstimatedTime(Math.round((distKm / 30) * 60));
   }, [destination, position]);
 
-  // Search for places as user types — debounced so it waits 400ms after typing stops
+  const saveToRecent = (name, coords) => {
+    const recent = JSON.parse(
+      localStorage.getItem("recentDestinations") || "[]",
+    );
+    const updated = [
+      { name, coords },
+      ...recent.filter((r) => r.name !== name),
+    ].slice(0, 3);
+    localStorage.setItem("recentDestinations", JSON.stringify(updated));
+  };
+
   const handleDestinationChange = (e) => {
     const value = e.target.value;
     setDestinationName(value);
-
-    // Clear the previous timer every keystroke
     clearTimeout(debounceTimer.current);
-
-    if (value.length < 2) {
+    if (value.length < 3) {
       setSuggestions([]);
+      setShowSuggestions(false);
       return;
     }
-
-    // Only fires 400ms after user stops typing
     debounceTimer.current = setTimeout(async () => {
       try {
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${value}&limit=5&countrycodes=gh&addressdetails=1`,
+          { headers: { "User-Agent": "KlouseApp/1.0" } },
         );
         const data = await res.json();
-        setSuggestions(data);
-        setShowSuggestions(true);
+        if (data.length > 0) {
+          setSuggestions(data);
+          setShowSuggestions(true);
+        }
       } catch (err) {
         console.log("Search failed");
       }
-    }, 400);
+    }, 500);
   };
 
-  // When user clicks a suggestion
   const handleSuggestionClick = (suggestion) => {
     const lat = parseFloat(suggestion.lat);
     const lon = parseFloat(suggestion.lon);
+    const name = suggestion.display_name.split(",")[0];
     fromSuggestion.current = true;
     setDestination([lat, lon]);
-    setDestinationName(suggestion.display_name.split(",")[0]);
+    setDestinationName(name);
     setSuggestions([]);
     setShowSuggestions(false);
   };
 
-  //getting the destination from search
   const handleDestinationSearch = async () => {
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${destinationName},Ghana&format=json&limit=1`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${destinationName},Ghana&limit=1`,
       );
-
       const data = await response.json();
-
       if (data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-        setDestination([lat, lon]);
+        setDestination([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
       }
     } catch (error) {
-      console.error("Geocoding error: ", error);
+      console.error("Geocoding error:", error);
     }
   };
 
-  //request ride
   const requestRide = async () => {
     try {
-      if (!destination) {
-        return alert("Please pick a destination");
-      }
+      if (!destination) return alert("Please pick a destination");
       const token = localStorage.getItem("token");
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/ride/request`,
@@ -161,14 +151,15 @@ function Detailsheet({
           },
           body: JSON.stringify({
             destination: [destination[1], destination[0]],
-            destinationName: destinationName,
+            destinationName,
+            vehicleType,
+            notes,
           }),
         },
       );
       const data = await response.json();
-      console.log("response: ", data);
-
       if (data.ride?._id) {
+        saveToRecent(destinationName, destination);
         navigate(`/rides/${data.ride._id}`);
       }
     } catch (err) {
@@ -179,71 +170,116 @@ function Detailsheet({
   return (
     <div
       className={`sheet-overlay ${showRideSheet ? "active" : ""}`}
-      onClick={() => setShowRideSheet(false)}
+      onClick={() => {
+        setShowRideSheet(false);
+        setShowSuggestions(false);
+      }}
     >
       <div
         className={`rideSheet ${showRideSheet ? "active" : ""}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drag handle */}
         <div className="sheet-handle" />
-
         <div className="sheet-content">
-          {/* Both inputs on the same row */}
-          <div className="inputs-row">
-            {/* Pickup — left */}
-            <div className="input-group">
-              <div className="input-label">FROM</div>
-              <div className="location-input pickup-display">
-                <i className="bx bxs-circle pickup-dot" />
-                <span>{pickupName || "Getting location..."}</span>
-              </div>
+          {/* Search bar */}
+          <div className="search-bar-wrap">
+            <i className="bx bxs-map destination-dot" />
+            <input
+              className="destination-input"
+              type="text"
+              placeholder="Where to?"
+              value={destinationName}
+              onChange={handleDestinationChange}
+              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+              onKeyDown={(e) => e.key === "Enter" && handleDestinationSearch()}
+            />
+            {destinationName.length > 0 && (
+              <i
+                className="bx bx-x clear-btn"
+                onClick={() => {
+                  setDestinationName("");
+                  setSuggestions([]);
+                  setShowSuggestions(false);
+                }}
+              />
+            )}
+          </div>
+
+          {/* Suggestions */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="suggestions-list">
+              {suggestions.map((s, index) => (
+                <div
+                  key={index}
+                  className="suggestion-item"
+                  onClick={() => handleSuggestionClick(s)}
+                >
+                  <i className="bx bxs-map-pin" />
+                  <div className="suggestion-text">
+                    <span className="suggestion-name">
+                      {s.display_name.split(",")[0]}
+                    </span>
+                    <span className="suggestion-area">
+                      {s.display_name.split(",").slice(1, 3).join(",")}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
+          )}
 
-            {/* Destination — right, suggestions drop under this only */}
-            <div className="input-group">
-              <div className="input-label">TO</div>
-              <div className="location-input">
-                <i className="bx bxs-map destination-dot" />
-                <input
-                  className="destination-input"
-                  type="text"
-                  placeholder="Where to?"
-                  value={destinationName}
-                  onChange={handleDestinationChange}
-                  onFocus={() =>
-                    suggestions.length > 0 && setShowSuggestions(true)
-                  }
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && handleDestinationSearch()
-                  }
-                />
-              </div>
-
-              {/* Suggestions sit inside the destination input-group so they align under it */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="suggestions-list">
-                  {suggestions.map((s, index) => (
-                    <div
-                      key={index}
-                      className="suggestion-item"
-                      onClick={() => handleSuggestionClick(s)}
-                    >
-                      <i className="bx bxs-map-pin" />
-                      <div className="suggestion-text">
-                        <span className="suggestion-name">
-                          {s.display_name.split(",")[0]}
-                        </span>
-                        <span className="suggestion-area">
-                          {s.display_name.split(",").slice(1, 3).join(",")}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+          {/* Saved places */}
+          {!showSuggestions && (
+            <div className="saved-places-row">
+              {savedPlaces.home && (
+                <div
+                  className="saved-place-chip"
+                  onClick={() => {
+                    fromSuggestion.current = true;
+                    setDestination(savedPlaces.home.coords);
+                    setDestinationName("Home");
+                  }}
+                >
+                  <i className="bx bxs-home" />
+                  <span>Home</span>
+                </div>
+              )}
+              {savedPlaces.work && (
+                <div
+                  className="saved-place-chip"
+                  onClick={() => {
+                    fromSuggestion.current = true;
+                    setDestination(savedPlaces.work.coords);
+                    setDestinationName("Work");
+                  }}
+                >
+                  <i className="bx bxs-briefcase" />
+                  <span>Work</span>
                 </div>
               )}
             </div>
-          </div>
+          )}
+
+          {/* Recent destinations */}
+          {!showSuggestions && recentDestinations.length > 0 && (
+            <div className="recent-section">
+              <p className="recent-label">Recent</p>
+              {recentDestinations.map((r, i) => (
+                <div
+                  key={i}
+                  className="recent-item"
+                  onClick={() => {
+                    fromSuggestion.current = true;
+                    setDestination(r.coords);
+                    setDestinationName(r.name);
+                  }}
+                >
+                  <i className="bx bx-time-five" />
+                  <span>{r.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Fare preview */}
           {estimatedFare && (
@@ -252,6 +288,10 @@ function Detailsheet({
                 <i className="bx bxs-map" />
                 <span>{estimatedDistance} km</span>
               </div>
+              <div className="fare-preview-item">
+                <i className="bx bxs-time" />
+                <span>~{estimatedTime} min</span>
+              </div>
               <div className="fare-preview-item fare-highlight">
                 <i className="bx bxs-wallet" />
                 <span>~GH₵ {estimatedFare}</span>
@@ -259,8 +299,25 @@ function Detailsheet({
             </div>
           )}
 
-          <button className="confirm-btn" onClick={requestRide}>
-            Confirm <i className="bx bxs-chevron-right" />
+          {/* Notes */}
+          {destination && (
+            <div className="notes-wrap">
+              <input
+                type="text"
+                className="notes-input"
+                placeholder="Add a note for your driver... (optional)"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+          )}
+
+          {/* Confirm button */}
+          <button
+            className={`confirm-btn ${destination ? "confirm-btn-active" : ""}`}
+            onClick={requestRide}
+          >
+            Confirm Ride <i className="bx bxs-chevron-right" />
           </button>
         </div>
       </div>
