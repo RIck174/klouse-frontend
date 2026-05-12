@@ -64,6 +64,24 @@
     cursor: pointer;
     box-shadow: 0 6px 20px rgba(26, 86, 219, 0.3);
     transition: all 0.2s ease;
+    animation: requestPulse 2s ease infinite;
+}
+
+.no-ride-btn:hover {
+    background: #1e40af;
+    transform: translateY(-2px);
+}
+
+@keyframes requestPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 6px 20px rgba(26, 86, 219, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 6px 28px rgba(26, 86, 219, 0.65), 0 0 0 8px rgba(26, 86, 219, 0.08);
+    }
 }
 
 .no-ride-btn:hover {

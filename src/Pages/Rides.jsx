@@ -83,6 +83,10 @@ function Rides() {
       <div className="rides-container">
         <Navigation />
         <div className="no-ride-overlay">
+          <i
+            className="bx bxs-car"
+            style={{ fontSize: "52px", color: "#1a56db", marginBottom: "4px" }}
+          />
           <h2>No Active Ride</h2>
           <p>Request a ride from the home screen</p>
           <button
