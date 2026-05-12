@@ -224,10 +224,7 @@ function DriverPage() {
             zoomControl={false}
             style={{ height: "100%", width: "100%" }}
           >
-            <TileLayer
-              url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
-            />
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <LiveCenter position={driverPosition} />
             <Marker position={driverPosition}>
               <Popup>You are here</Popup>

@@ -209,10 +209,7 @@ function Activity() {
                   dragging={false}
                   scrollWheelZoom={false}
                 >
-                  <TileLayer
-                    url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
-                    attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
-                  />
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   <ShowRoute
                     pickup={[
                       lastRide.pickup.coordinates[1],
