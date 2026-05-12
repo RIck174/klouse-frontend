@@ -13,7 +13,7 @@ import socket from "../socket";
 function Rides() {
   const { id: rideId } = useParams();
   const navigate = useNavigate();
-  const [ride, setRide] = useState(null); // ride data from backend
+  const [ride, setRide] = useState(null);
 
   useActiveRide(rideId);
   const {
@@ -37,18 +37,15 @@ function Rides() {
       : null;
   }, [ride]);
 
-  // Fetch ride data from backend
+  // Fetch ride data
   useEffect(() => {
     if (!rideId) return;
-
     const fetchRide = async () => {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
           `${import.meta.env.VITE_API_URL}/ride/${rideId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
+          { headers: { Authorization: `Bearer ${token}` } },
         );
         if (!res.ok) return;
         const data = await res.json();
@@ -57,14 +54,12 @@ function Rides() {
         console.error("Failed to fetch ride:", err);
       }
     };
-
     fetchRide();
   }, [rideId]);
 
+  // Listen for ride completed
   useEffect(() => {
-    socket.on("rideCompleted", () => {
-      navigate("/home");
-    });
+    socket.on("rideCompleted", () => navigate("/home"));
     return () => socket.off("rideCompleted");
   }, []);
 
@@ -82,28 +77,28 @@ function Rides() {
     }
   };
 
-  // ── STATE 1: No rideId ──
+  // ── No rideId ──
   if (!rideId) {
     return (
-      <div className="homepage-container">
+      <div className="rides-container">
         <Navigation />
         <div className="no-ride-overlay">
           <h2>No Active Ride</h2>
           <p>Request a ride from the home screen</p>
           <button
-            className="btn"
+            className="no-ride-btn"
             onClick={() => navigate("/home", { state: { openSheet: true } })}
           >
-            Request Ride
+            Request a Ride
           </button>
         </div>
       </div>
     );
   }
 
-  // ── STATE 2 & 3: Has rideId ──
+  // ── Has rideId ──
   return (
-    <div className="homepage-container">
+    <div className="rides-container">
       <Navigation />
 
       {userPosition ? (
@@ -119,33 +114,33 @@ function Rides() {
             zoomOffset={-1}
             detectRetina={true}
           />
-
           <Marker position={userPosition} />
           {pickupLatLng && <Marker position={pickupLatLng} />}
           {destinationLatLng && <Marker position={destinationLatLng} />}
-
-          {/* Road route — only draws when route data is ready */}
           {pickupLatLng && destinationLatLng && (
             <ShowRoute pickup={pickupLatLng} destination={destinationLatLng} />
           )}
-
           {driverPosition && <Marker position={driverPosition} />}
         </MapContainer>
       ) : (
         <div className="map-loading">Locating you...</div>
       )}
 
+      {/* Bottom Sheet */}
       <div className="ride-bottom-sheet">
+        {/* Searching state */}
         {rideStatus === "searching" && (
           <div className="sheet-searching">
             <div className="searching-spinner" />
             <p>Finding your driver...</p>
+            <p className="searching-sub">This usually takes under a minute</p>
             <button className="cancel-btn" onClick={cancelRide}>
-              Cancel Ride
+              <i className="bx bx-x" /> Cancel Ride
             </button>
           </div>
         )}
 
+        {/* Accepted state */}
         {rideStatus === "accepted" && (
           <div className="sheet-accepted">
             <div className="driver-info">
@@ -153,10 +148,10 @@ function Rides() {
                 <i className="bx bxs-user" />
               </div>
               <div className="driver-details">
-                <h3>{driverInfo?.name ?? "Driver"}</h3>
+                <h3>{driverInfo?.name ?? "Your Driver"}</h3>
                 <span className="driver-rating">
                   <i className="bx bxs-star" />
-                  {driverInfo?.rating ?? "—"}
+                  {driverInfo?.rating ?? "5.0"}
                 </span>
               </div>
               <div className="fare-box">
@@ -168,12 +163,12 @@ function Rides() {
             <div className="eta-row">
               <i className="bx bxs-time" />
               {eta != null
-                ? `Driver arriving in ${eta} min • ${distance} km away`
-                : "Calculating..."}
+                ? `Driver arriving in ${eta} min · ${distance} km away`
+                : "Calculating ETA..."}
             </div>
 
             <button className="cancel-btn" onClick={cancelRide}>
-              Cancel <i className="bx bxs-x-circle" />
+              <i className="bx bx-x" /> Cancel Ride
             </button>
           </div>
         )}
