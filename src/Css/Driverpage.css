@@ -7,6 +7,7 @@
     background: #f8faff;
     font-family: 'DM Sans', sans-serif;
     overflow: hidden;
+    touch-action: none;
 }
 
 /* ── MAP ── */
