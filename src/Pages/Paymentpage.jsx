@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Navigation from "../Components/Navigation";
+import Sidebar from "../Components/Sidebar";
 import "boxicons/css/boxicons.min.css";
 import "../Css/Homepage.css";
 import "../Css/Paymentpage.css";
@@ -11,28 +11,28 @@ const PAYMENT_METHODS = [
     id: "mtn",
     provider: "MTN MoMo",
     color: "#b8860b",
-    bg: "#3a2e00",
+    bg: "#fef3c7",
     icon: "bx bxs-phone",
   },
   {
     id: "telecel",
     provider: "Telecel Cash",
-    color: "#c0392b",
-    bg: "#3b0a08",
+    color: "#dc2626",
+    bg: "#fee2e2",
     icon: "bx bxs-phone",
   },
   {
     id: "airteltigo",
     provider: "AirtelTigo",
-    color: "#c0392b",
-    bg: "#3b0a08",
+    color: "#7c3aed",
+    bg: "#ede9fe",
     icon: "bx bxs-phone",
   },
   {
     id: "cash",
     provider: "Cash",
-    color: "#888",
-    bg: "#1e1e1e",
+    color: "#16a34a",
+    bg: "#dcfce7",
     icon: "bx bxs-wallet",
   },
 ];
@@ -43,27 +43,26 @@ function Payment() {
   const [loading, setLoading] = useState(true);
   const [selectedMethod, setSelectedMethod] = useState("cash");
   const [momoNumber, setMomoNumber] = useState("");
-  const [showAddMoney, setShowAddMoney] = useState(false);
-  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Modal states
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [addAmount, setAddAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-
         const [paymentRes, historyRes] = await Promise.all([
           fetch(`${API}/user/payment-info`, { headers }),
           fetch(`${API}/ride/history`, { headers }),
         ]);
-
         const paymentData = await paymentRes.json();
-        console.log(paymentData);
         const historyData = await historyRes.json();
-
         setPaymentInfo(paymentData);
         setTransactions(historyData);
         setSelectedMethod(paymentData.paymentMethod || "cash");
@@ -109,13 +108,9 @@ function Payment() {
   };
 
   const handlePaystack = () => {
-    console.log("handlePaystack called, email:", paymentInfo.email);
     if (!addAmount || addAmount <= 0) return alert("Enter a valid amount");
-
-    if (!window.PaystackPop) {
-      alert("Paystack is still loading, please try again");
-      return;
-    }
+    if (!window.PaystackPop)
+      return alert("Paystack is still loading, please try again");
 
     const handler = window.PaystackPop.setup({
       key: "pk_test_9f6ffcb1e58c8f1c10ff83c87f812efefa9ac7ae",
@@ -124,7 +119,6 @@ function Payment() {
       currency: "GHS",
       ref: "klouse_" + Math.floor(Math.random() * 1000000000),
       callback: (response) => {
-        console.log("Paystack response:", response);
         const token = localStorage.getItem("token");
         fetch(`${API}/user/balance`, {
           method: "PUT",
@@ -136,17 +130,13 @@ function Payment() {
         })
           .then((res) => res.json())
           .then((data) => {
-            console.log("Balance updated:", data);
             setPaymentInfo((prev) => ({ ...prev, balance: data.balance }));
-            setShowAddMoney(false);
+            setShowAddModal(false);
             setAddAmount("");
             alert("Top up successful!");
-          })
-          .catch((err) => console.log("Balance update error:", err));
+          });
       },
-      onClose: () => {
-        console.log("Payment closed");
-      },
+      onClose: () => console.log("Payment closed"),
     });
     handler.openIframe();
   };
@@ -167,7 +157,6 @@ function Payment() {
   if (loading) {
     return (
       <div className="payment-page">
-        <Navigation />
         <div className="payment-loading">
           <div className="searching-spinner" />
           <p>Loading wallet...</p>
@@ -178,15 +167,19 @@ function Payment() {
 
   return (
     <div className="payment-page">
-      <Navigation />
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <div className="payment-content">
-        {/* ── Page Header ── */}
-        <div className="payment-page-header">
+        {/* ── Top row ── */}
+        <div className="payment-top-row">
+          <button
+            className="float-btn"
+            onClick={() => setSidebarOpen(true)}
+            style={{ width: 40, height: 40, fontSize: 22, flexShrink: 0 }}
+          >
+            <i className="bx bx-menu" />
+          </button>
           <h1 className="payment-page-title">Wallet</h1>
-          <p className="payment-page-subtitle">
-            Manage your balance & payments
-          </p>
         </div>
 
         {/* ── Wallet Card ── */}
@@ -199,7 +192,7 @@ function Payment() {
               </div>
               <p className="wallet-balance-label">Available Balance</p>
               <h2 className="wallet-balance-amount">
-                <span>GH₵</span>
+                <span>GH₵ </span>
                 {(paymentInfo?.balance || 0).toFixed(2)}
               </h2>
             </div>
@@ -226,182 +219,176 @@ function Payment() {
           <div className="wallet-actions">
             <button
               className="wallet-btn wallet-btn-primary"
-              onClick={() => {
-                setShowAddMoney(!showAddMoney);
-                setShowWithdraw(false);
-              }}
+              onClick={() => setShowAddModal(true)}
             >
               <i className="bx bxs-plus-circle" />
               Add Money
             </button>
             <button
               className="wallet-btn wallet-btn-secondary"
-              onClick={() => {
-                setShowWithdraw(!showWithdraw);
-                setShowAddMoney(false);
-              }}
+              onClick={() => setShowWithdrawModal(true)}
             >
               <i className="bx bxs-download" />
               Withdraw
             </button>
           </div>
-
-          {/* Add Money Panel */}
-          {showAddMoney && (
-            <div className="wallet-input-panel">
-              <p className="wallet-input-label">Amount to Add</p>
-              <div className="wallet-input-row">
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  value={addAmount}
-                  onChange={(e) => setAddAmount(e.target.value)}
-                  className="wallet-amount-input"
-                />
-                <button className="wallet-confirm-btn" onClick={handlePaystack}>
-                  Pay via MoMo
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Withdraw Panel */}
-          {showWithdraw && (
-            <div className="wallet-input-panel">
-              <p className="wallet-input-label">Amount to Withdraw</p>
-              <div className="wallet-input-row">
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  className="wallet-amount-input"
-                />
-                <button
-                  className="wallet-confirm-btn"
-                  onClick={() => {
-                    alert(`Withdrawing GH₵ ${withdrawAmount} — coming soon`);
-                    setShowWithdraw(false);
-                    setWithdrawAmount("");
-                  }}
-                >
-                  Send to MoMo
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* ── Two Column Grid ── */}
-        <div className="payment-grid">
-          {/* Payment Methods */}
-          <div className="payment-card">
-            <div className="payment-card-header">
-              <span className="payment-card-title">Payment Methods</span>
-            </div>
-            <div className="payment-card-body">
-              <div className="methods-list">
-                {PAYMENT_METHODS.map((method) => (
+        {/* ── Payment Methods ── */}
+        <div className="payment-card">
+          <div className="payment-card-header">
+            <span className="payment-card-title">Payment Methods</span>
+          </div>
+          <div className="payment-card-body">
+            <div className="methods-list">
+              {PAYMENT_METHODS.map((method) => (
+                <div
+                  key={method.id}
+                  className={`method-item ${selectedMethod === method.id ? "method-item-selected" : ""}`}
+                  onClick={() => setSelectedMethod(method.id)}
+                >
                   <div
-                    key={method.id}
-                    className={`method-item ${selectedMethod === method.id ? "method-item-selected" : ""}`}
-                    onClick={() => setSelectedMethod(method.id)}
+                    className="method-icon"
+                    style={{ background: method.bg, color: method.color }}
                   >
+                    <i className={method.icon} />
+                  </div>
+                  <div className="method-info">
+                    <div className="method-name">{method.provider}</div>
+                    <div className="method-sub">
+                      {method.id === "cash"
+                        ? "Pay driver directly"
+                        : method.id === paymentInfo?.paymentMethod &&
+                            paymentInfo?.momoNumber
+                          ? paymentInfo.momoNumber
+                          : "No number saved"}
+                    </div>
+                  </div>
+                  <div className="method-right">
+                    {paymentInfo?.paymentMethod === method.id && (
+                      <span className="method-default-badge">Default</span>
+                    )}
                     <div
-                      className="method-icon"
-                      style={{ background: method.bg, color: method.color }}
-                    >
-                      <i className={method.icon} />
-                    </div>
+                      className={`method-radio ${selectedMethod === method.id ? "method-radio-active" : ""}`}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                    <div className="method-info">
-                      <div className="method-name">{method.provider}</div>
-                      <div className="method-sub">
-                        {method.id === "cash"
-                          ? "Pay driver directly"
-                          : method.id === paymentInfo?.paymentMethod &&
-                              paymentInfo?.momoNumber
-                            ? paymentInfo.momoNumber
-                            : "No number saved"}
+            {selectedMethod !== "cash" && (
+              <div className="momo-input-wrap">
+                <input
+                  type="tel"
+                  placeholder="Enter MoMo number e.g. 0551234567"
+                  value={momoNumber}
+                  onChange={(e) => setMomoNumber(e.target.value)}
+                  className="momo-input"
+                />
+              </div>
+            )}
+
+            <button
+              className="save-method-btn"
+              onClick={savePaymentMethod}
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "Save Payment Method"}
+            </button>
+          </div>
+        </div>
+
+        {/* ── Recent Transactions ── */}
+        <div className="payment-card">
+          <div className="payment-card-header">
+            <span className="payment-card-title">Recent Transactions</span>
+            {transactions.length > 0 && (
+              <span className="payment-card-count">
+                {transactions.length} rides
+              </span>
+            )}
+          </div>
+          <div className="payment-card-body">
+            {transactions.length === 0 ? (
+              <div className="tx-empty">
+                <i className="bx bxs-car" />
+                <p>No completed rides yet</p>
+              </div>
+            ) : (
+              <div className="transactions-list">
+                {transactions.map((tx) => (
+                  <div key={tx._id} className="tx-item">
+                    <div className="tx-icon">
+                      <i className="bx bxs-car" />
+                    </div>
+                    <div className="tx-info">
+                      <div className="tx-destination">
+                        {tx.destinationName || "Unknown destination"}
                       </div>
+                      <div className="tx-date">{formatDate(tx.createdAt)}</div>
                     </div>
-
-                    <div className="method-right">
-                      {paymentInfo?.paymentMethod === method.id && (
-                        <span className="method-default-badge">Default</span>
-                      )}
-                      <div
-                        className={`method-radio ${selectedMethod === method.id ? "method-radio-active" : ""}`}
-                      />
-                    </div>
+                    <span className="tx-amount">
+                      − GH₵ {(tx.fare || 0).toFixed(2)}
+                    </span>
                   </div>
                 ))}
               </div>
-
-              {selectedMethod !== "cash" && (
-                <div className="momo-input-wrap">
-                  <input
-                    type="tel"
-                    placeholder="Enter MoMo number e.g. 0551234567"
-                    value={momoNumber}
-                    onChange={(e) => setMomoNumber(e.target.value)}
-                    className="momo-input"
-                  />
-                </div>
-              )}
-
-              <button
-                className="save-method-btn"
-                onClick={savePaymentMethod}
-                disabled={saving}
-              >
-                {saving ? "Saving..." : "Save Payment Method"}
-              </button>
-            </div>
-          </div>
-
-          {/* Recent Transactions */}
-          <div className="payment-card">
-            <div className="payment-card-header">
-              <span className="payment-card-title">Recent Transactions</span>
-              {transactions.length > 0 && (
-                <span className="payment-card-count">
-                  {transactions.length} rides
-                </span>
-              )}
-            </div>
-            <div className="payment-card-body">
-              {transactions.length === 0 ? (
-                <div className="tx-empty">
-                  <i className="bx bxs-car" />
-                  <p>No completed rides yet</p>
-                </div>
-              ) : (
-                <div className="transactions-list">
-                  {transactions.map((tx) => (
-                    <div key={tx._id} className="tx-item">
-                      <div className="tx-icon">
-                        <i className="bx bxs-car" />
-                      </div>
-                      <div className="tx-info">
-                        <div className="tx-destination">
-                          {tx.destinationName || "Unknown destination"}
-                        </div>
-                        <div className="tx-date">
-                          {formatDate(tx.createdAt)}
-                        </div>
-                      </div>
-                      <span className="tx-amount">
-                        − GH₵ {(tx.fare || 0).toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* ── Add Money Modal ── */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <h2 className="modal-title">Add Money</h2>
+            <input
+              type="number"
+              placeholder="Enter amount (GH₵)"
+              value={addAmount}
+              onChange={(e) => setAddAmount(e.target.value)}
+              className="modal-input"
+              autoFocus
+            />
+            <button className="modal-confirm-btn" onClick={handlePaystack}>
+              <i className="bx bxs-lock-alt" /> Pay via MoMo
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Withdraw Modal ── */}
+      {showWithdrawModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowWithdrawModal(false)}
+        >
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <h2 className="modal-title">Withdraw</h2>
+            <input
+              type="number"
+              placeholder="Enter amount (GH₵)"
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              className="modal-input"
+              autoFocus
+            />
+            <button
+              className="modal-confirm-btn"
+              onClick={() => {
+                alert(`Withdrawing GH₵ ${withdrawAmount} — coming soon`);
+                setShowWithdrawModal(false);
+                setWithdrawAmount("");
+              }}
+            >
+              <i className="bx bxs-download" /> Send to MoMo
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
