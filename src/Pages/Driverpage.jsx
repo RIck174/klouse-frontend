@@ -204,18 +204,23 @@ function DriverPage() {
 
   return (
     <div className="driver-page">
-      {/* TOP BAR */}
-      <div className="driver-topbar">
-        <div className="driver-brand">
+      {/* ── Floating brand badge top-left ── */}
+      <div className="driver-float-brand">
+        <span className="driver-brand-name">
           Klouse <span>Driver</span>
-        </div>
-        <div className="driver-profile">
-          <span className="driver-name">{profile?.username || "Driver"}</span>
-          <div className={`online-dot ${isOnline ? "online" : ""}`} />
-        </div>
+        </span>
+        <div className={`online-dot ${isOnline ? "online" : ""}`} />
       </div>
 
-      {/* MAP */}
+      {/* ── Floating online/offline button top-right ── */}
+      <button
+        className={`driver-toggle-btn ${isOnline ? "go-offline" : "go-online"}`}
+        onClick={isOnline ? goOffline : goOnline}
+      >
+        {isOnline ? "Go Offline" : "Go Online"}
+      </button>
+
+      {/* ── MAP ── */}
       <div className="driver-map-wrap">
         {driverPosition ? (
           <MapContainer
@@ -257,29 +262,26 @@ function DriverPage() {
         )}
       </div>
 
-      {/* BOTTOM PANEL */}
+      {/* ── BOTTOM PANEL ── */}
       <div className="driver-bottom">
-        {!activeRide && (
-          <div className="driver-status-section">
-            <div className="driver-status-info">
-              <p className="status-label">
-                {isOnline ? "You're Online" : "You're Offline"}
-              </p>
-              <p className="status-sub">
-                {isOnline
-                  ? "Waiting for ride requests..."
-                  : "Toggle to start receiving rides"}
-              </p>
-            </div>
-            <button
-              className={`toggle-online-btn ${isOnline ? "btn-offline" : "btn-online"}`}
-              onClick={isOnline ? goOffline : goOnline}
-            >
-              {isOnline ? "Go Offline" : "Go Online"}
-            </button>
+        {/* Offline */}
+        {!isOnline && (
+          <div className="driver-offline-state">
+            <i className="bx bx-moon" />
+            <span>You're offline — tap Go Online to start</span>
           </div>
         )}
 
+        {/* Online, waiting */}
+        {isOnline && !pendingRide && !activeRide && (
+          <div className="driver-waiting-state">
+            <div className="waiting-spinner" />
+            <p>Waiting for ride requests...</p>
+            <span>You'll be notified when a rider is nearby</span>
+          </div>
+        )}
+
+        {/* Pending ride request */}
         {pendingRide && !activeRide && (
           <div className="ride-request-card">
             <div className="request-header">
@@ -323,6 +325,7 @@ function DriverPage() {
           </div>
         )}
 
+        {/* Active ride */}
         {activeRide && (
           <div className="active-ride-card">
             <div className="active-header">
@@ -336,7 +339,7 @@ function DriverPage() {
               <div className="route-row">
                 <div className="route-dot pickup-dot-d" />
                 <div className="route-info">
-                  <span className="route-label">PICKUP</span>
+                  <span className="route-label">Pickup</span>
                   <span className="route-value">Rider's location</span>
                 </div>
               </div>
@@ -344,7 +347,7 @@ function DriverPage() {
               <div className="route-row">
                 <div className="route-dot dest-dot-d" />
                 <div className="route-info">
-                  <span className="route-label">DESTINATION</span>
+                  <span className="route-label">Destination</span>
                   <span className="route-value">
                     {activeRide.destinationName || "—"}
                   </span>
@@ -359,7 +362,7 @@ function DriverPage() {
         )}
       </div>
 
-      {/* TOAST */}
+      {/* ── TOAST ── */}
       {toast && (
         <div className={`driver-toast driver-toast-${toast.type}`}>
           <i
