@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMap, Polyline } from "react-leaflet";
 
-const fittedDestinations = new Set();
-
 export function FitBounds({ pickup, destination }) {
   const map = useMap();
   useEffect(() => {
@@ -18,6 +16,9 @@ export function ShowRoute({ pickup, destination }) {
   const [route, setRoute] = useState(null);
 
   useEffect(() => {
+    // Reset route when destination changes
+    setRoute(null);
+
     const fetchRoute = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -38,18 +39,15 @@ export function ShowRoute({ pickup, destination }) {
         );
         setRoute(coords);
 
-        // Key is ONLY the destination — pickup moving won't retrigger fit
-        const destKey = `${destination[0]},${destination[1]}`;
-        if (!fittedDestinations.has(destKey)) {
-          map.fitBounds(coords, { padding: [30, 30] });
-          fittedDestinations.add(destKey);
-        }
+        // Always fit bounds when route loads
+        map.fitBounds(coords, { padding: [30, 30] });
       } catch (err) {
         console.error("Route fetch failed", err);
       }
     };
+
     fetchRoute();
-  }, [map, pickup, destination]);
+  }, [pickup[0], pickup[1], destination[0], destination[1]]);
 
   if (!route) return null;
 
