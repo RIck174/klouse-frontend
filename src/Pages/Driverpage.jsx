@@ -54,6 +54,14 @@ function DriverPage() {
       console.error("Could not decode token", e);
     }
   }, []);
+  //scroll to top
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   // Listen for ride events
   useEffect(() => {

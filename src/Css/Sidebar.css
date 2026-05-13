@@ -4,7 +4,7 @@
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(15, 23, 42, 0.4);
     opacity: 0;
     visibility: hidden;
     transition: 0.3s ease;
@@ -25,9 +25,9 @@
     left: -280px;
     width: 280px;
     height: 100vh;
-    background: #161616;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.5);
+    background: #ffffff;
+    border-right: 1px solid rgba(26, 86, 219, 0.08);
+    box-shadow: 8px 0 40px rgba(26, 86, 219, 0.1);
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
@@ -41,9 +41,9 @@
 
 /* ── Header ── */
 .sidebar-header {
-    padding: 28px 24px 22px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    background: linear-gradient(135deg, rgba(245, 197, 24, 0.06) 0%, transparent 60%);
+    padding: 48px 24px 22px;
+    border-bottom: 1px solid rgba(26, 86, 219, 0.08);
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 60%);
 }
 
 .brand h2 {
@@ -51,20 +51,20 @@
     font-family: 'Syne', sans-serif;
     font-size: 24px;
     font-weight: 800;
-    color: #f5c518;
+    color: #1a56db;
     letter-spacing: -0.5px;
 }
 
 .brand p {
     margin: 0;
     font-size: 12px;
-    color: #555;
+    color: #94a3b8;
     font-weight: 400;
 }
 
 /* ── Menu ── */
 .sidebar-menu {
-    padding: 12px 12px;
+    padding: 12px;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -80,7 +80,7 @@
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
-    color: #888;
+    color: #64748b;
     border-radius: 14px;
     transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
@@ -93,30 +93,30 @@
 }
 
 .menu-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #e8e8e8;
+    background: #eff6ff;
+    color: #1a56db;
     transform: translateX(3px);
 }
 
 .menu-item:hover i {
-    color: #f5c518;
+    color: #1a56db;
 }
 
-/* Logout item */
+/* ── Logout ── */
 .menu-item:last-child {
-    color: #e63946;
+    color: #dc2626;
     margin-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgba(26, 86, 219, 0.06);
     padding-top: 18px;
     border-radius: 0;
 }
 
 .menu-item:last-child:hover {
-    background: rgba(230, 57, 70, 0.08);
-    color: #ff4757;
+    background: #fff5f5;
+    color: #dc2626;
     transform: translateX(3px);
 }
 
 .menu-item:last-child:hover i {
-    color: #ff4757;
+    color: #dc2626;
 }

@@ -1,59 +1,67 @@
 import "../Css/Sidebar.css";
 import { useNavigate } from "react-router-dom";
 
-function Sidebar({isOpen, setIsOpen}){
-    const navigate= useNavigate();
-    const handleLogout=() =>{
-        localStorage.removeItem("token");
-        setIsOpen(false);
-        navigate("/", {replace:true});
-    }
-    return(
-        <>
-            <div className={`overlay ${isOpen ? 'active': ''}`} 
+function Sidebar({ isOpen, setIsOpen }) {
+  const navigate = useNavigate();
 
-            onClick={()=>setIsOpen(false)}>
-                <div className={`sidebar ${isOpen ? 'active': ''}`}
-                onClick={(e)=>e.stopPropagation()}>
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsOpen(false);
+    navigate("/", { replace: true });
+  };
 
-                    <div className="sidebar-header">
-                        <div className="brand">
-                            <h2>Klouse</h2>
-                            <p>Move smater.</p>
-                        </div>
-                    </div>
+  const goTo = (path) => {
+    setIsOpen(false);
+    navigate(path);
+  };
 
-                     {/* Menu */}
-                     <div className="sidebar-menu">
-                        <div className="menu-item" onClick={()=>navigate("/home")}>
-                            <i className='bx bxs-home' ></i>
-                            <span>Home</span>
-                        </div>
-                        <div className="menu-item" onClick={()=>navigate("/rides")}>
-                            <i className='bx bxs-car' ></i>
-                            <span>Rides</span>
-                        </div>
-                        <div className="menu-item" onClick={()=>navigate("/payment")}>
-                            <i className='bx bxs-wallet' ></i>
-                            <span>Payment</span>
-                        </div>
-                        <div className="menu-item"  onClick={()=>navigate("/activity")}>
-                            <i className='bx bxs-time-five'></i>
-                            <span>Activity</span>
-                        </div>
-                        <div className="menu-item" onClick={()=>navigate("/settings")}>
-                            <i className='bx bxs-cog'></i>
-                            <span>Settings</span>
-                        </div>
-                        <div className="menu-item" onClick={handleLogout}>
-                            <i className='bx bxs-log-out'></i>
-                            <span>Logout</span>
-                        </div>
-                     </div>
+  return (
+    <div
+      className={`overlay ${isOpen ? "active" : ""}`}
+      onClick={() => setIsOpen(false)}
+    >
+      <div
+        className={`sidebar ${isOpen ? "active" : ""}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sidebar-header">
+          <div className="brand">
+            <h2>Klouse</h2>
+            <p>Move smarter.</p>
+          </div>
+        </div>
 
-                </div>
-            </div>
-        </>
-    )
+        {/* Menu */}
+        <div className="sidebar-menu">
+          <div className="menu-item" onClick={() => goTo("/home")}>
+            <i className="bx bxs-home" />
+            <span>Home</span>
+          </div>
+          <div className="menu-item" onClick={() => goTo("/rides")}>
+            <i className="bx bxs-car" />
+            <span>Rides</span>
+          </div>
+          <div className="menu-item" onClick={() => goTo("/payment")}>
+            <i className="bx bxs-wallet" />
+            <span>Payment</span>
+          </div>
+          <div className="menu-item" onClick={() => goTo("/activity")}>
+            <i className="bx bxs-time-five" />
+            <span>Activity</span>
+          </div>
+          <div className="menu-item" onClick={() => goTo("/settings")}>
+            <i className="bx bxs-cog" />
+            <span>Settings</span>
+          </div>
+          <div className="menu-item" onClick={handleLogout}>
+            <i className="bx bxs-log-out" />
+            <span>Logout</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
+
 export default Sidebar;
