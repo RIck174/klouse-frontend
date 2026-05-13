@@ -120,15 +120,11 @@ function Activity() {
             </div>
             <div className="stat-card">
               <span className="stat-card-value">{completedRides.length}</span>
-              <span className="stat-card-label">Done</span>
+              <span className="stat-card-label">Completed</span>
             </div>
             <div className="stat-card">
               <span className="stat-card-value">{cancelledRides.length}</span>
               <span className="stat-card-label">Cancelled</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-card-value">₵{totalSpent.toFixed(0)}</span>
-              <span className="stat-card-label">Spent</span>
             </div>
           </div>
 
@@ -150,6 +146,7 @@ function Activity() {
               <div className="last-journey-map">
                 <div className="last-journey-map-inner">
                   <MapContainer
+                    key={`${lastPickup[0]}-${lastPickup[1]}`}
                     center={lastPickup}
                     zoom={13}
                     style={{ height: "100%", width: "100%" }}
@@ -323,6 +320,7 @@ function Activity() {
               </div>
               <div className="map-card-container">
                 <MapContainer
+                  key={`${lastPickup[0]}-${lastPickup[1]}`}
                   center={lastPickup}
                   zoom={13}
                   style={{ height: "100%", width: "100%" }}
