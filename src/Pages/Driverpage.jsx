@@ -223,11 +223,13 @@ function DriverPage() {
           className="float-btn"
           onClick={() => setSidebarOpen(true)}
           style={{
-            width: 34,
-            height: 34,
-            fontSize: 20,
+            width: 24,
+            height: 24,
+            fontSize: 18,
             boxShadow: "none",
             background: "transparent",
+            padding: 0,
+            minWidth: "unset",
           }}
         >
           <i className="bx bx-menu" />

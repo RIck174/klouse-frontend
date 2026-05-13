@@ -47,11 +47,13 @@
     z-index: 1000;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     background: white;
     border-radius: 50px;
-    padding: 10px 16px;
+    padding: 8px 14px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+    height: 42px;
+    box-sizing: border-box;
 }
 
 .driver-brand-name {
