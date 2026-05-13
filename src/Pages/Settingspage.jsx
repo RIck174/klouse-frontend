@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navigation from "../Components/Navigation";
 import "../Css/Settingspage.css";
 import "boxicons/css/boxicons.min.css";
 
@@ -143,7 +142,7 @@ function Settings() {
       const cJson = await cRes.json();
       const imgUrl = cJson.secure_url;
       const token = localStorage.getItem("token");
-      await fetch(`${API}/user/profile-image`, {
+      const updateRes = await fetch(`${API}/user/profile-image`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -151,8 +150,11 @@ function Settings() {
         },
         body: JSON.stringify({ imgUrl }),
       });
+
+      if (!updateRes.ok) throw new Error("Failed to save image");
+
       setUser((p) => ({ ...p, profileImage: imgUrl }));
-      setPreview(null); // clear blob URL, let the real Cloudinary URL show
+      setPreview(null);
       setSuccess("Photo updated");
     } catch {
       setError("Failed to upload photo");
@@ -335,8 +337,6 @@ function Settings() {
 
   return (
     <div className="settings-page">
-      <Navigation />
-
       <div className="settings-content">
         {/* Toast */}
         {success && (

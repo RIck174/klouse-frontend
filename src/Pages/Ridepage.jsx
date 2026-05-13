@@ -154,8 +154,17 @@ function RidePage({ showRideSheet, setShowRideSheet, onMenuClick }) {
   }, [navigate]);
 
   const getInitials = () => {
-    if (!userProfile?.email) return "?";
-    return userProfile.email.slice(0, 2).toUpperCase();
+    if (userProfile?.username) {
+      const parts = userProfile.username.trim().split(" ");
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return userProfile.username.slice(0, 2).toUpperCase();
+    }
+    if (userProfile?.email) {
+      return userProfile.email.slice(0, 2).toUpperCase();
+    }
+    return "?";
   };
 
   const greeting = () => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useMap, Polyline } from "react-leaflet";
 
 export function FitBounds({ pickup, destination }) {
@@ -14,9 +14,16 @@ export function FitBounds({ pickup, destination }) {
 export function ShowRoute({ pickup, destination }) {
   const map = useMap();
   const [route, setRoute] = useState(null);
+  const lastDestRef = useRef(null);
 
   useEffect(() => {
-    // Reset route when destination changes
+    if (!destination) return;
+
+    // Only re-fetch if destination actually changed
+    const destKey = `${destination[0]},${destination[1]}`;
+    if (lastDestRef.current === destKey) return;
+    lastDestRef.current = destKey;
+
     setRoute(null);
 
     const fetchRoute = async () => {
@@ -38,8 +45,6 @@ export function ShowRoute({ pickup, destination }) {
           ([lng, lat]) => [lat, lng],
         );
         setRoute(coords);
-
-        // Always fit bounds when route loads
         map.fitBounds(coords, { padding: [30, 30] });
       } catch (err) {
         console.error("Route fetch failed", err);
@@ -47,7 +52,8 @@ export function ShowRoute({ pickup, destination }) {
     };
 
     fetchRoute();
-  }, [pickup[0], pickup[1], destination[0], destination[1]]);
+  }, [destination]);
+  // NOTE: pickup intentionally NOT in deps — GPS updates won't re-trigger
 
   if (!route) return null;
 
