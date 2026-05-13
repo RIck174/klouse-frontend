@@ -59,6 +59,14 @@ function Settings() {
   const [openFaq, setOpenFaq] = useState(null);
   const [reportText, setReportText] = useState("");
   const [notifs, setNotifs] = useState({ rides: true, promos: false });
+  const [savedPlaces, setSavedPlaces] = useState([]);
+  const [newPlace, setNewPlace] = useState({
+    label: "",
+    icon: "bxs-map-pin",
+    name: "",
+    coordinates: [],
+  });
+  const [placeSuggestions, setPlaceSuggestions] = useState([]);
   const navigate = useNavigate();
 
   // ── Fetch profile
@@ -77,6 +85,22 @@ function Settings() {
       }
     };
     fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchPlaces = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/places`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setSavedPlaces(data);
+      } catch {
+        console.log("Failed to fetch saved places");
+      }
+    };
+    fetchPlaces();
   }, []);
 
   // ── Auto-dismiss toast
@@ -128,6 +152,7 @@ function Settings() {
         body: JSON.stringify({ imgUrl }),
       });
       setUser((p) => ({ ...p, profileImage: imgUrl }));
+      setPreview(null); // clear blob URL, let the real Cloudinary URL show
       setSuccess("Photo updated");
     } catch {
       setError("Failed to upload photo");
@@ -243,6 +268,59 @@ function Settings() {
       window.location.href = "/";
     } catch {
       setError("Failed to delete account. Check your password.");
+    }
+  };
+
+  const deletePlace = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${API}/places/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSavedPlaces((prev) => prev.filter((p) => p._id !== id));
+      setSuccess("Place deleted");
+    } catch {
+      setError("Failed to delete place");
+    }
+  };
+
+  const saveNewPlace = async () => {
+    if (!newPlace.label || !newPlace.name) {
+      return setError("Please fill in label and name");
+    }
+    if (newPlace.coordinates.length === 0) {
+      return setError("Please search and select a location");
+    }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/places`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newPlace),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSavedPlaces((prev) => [data, ...prev]);
+        setNewPlace({
+          label: "",
+          icon: "bxs-map-pin",
+          name: "",
+          coordinates: [],
+        });
+        setSuccess("Place saved!");
+        closeModal();
+      } else {
+        setError(data.message || "Failed to save place");
+      }
+    } catch {
+      setError("Server error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -404,6 +482,60 @@ function Settings() {
                 className={`toggle ${notifs.promos ? "on" : ""}`}
                 onClick={() => setNotifs((p) => ({ ...p, promos: !p.promos }))}
               />
+            </div>
+          </div>
+        </div>
+
+        {/* ── SAVED PLACES ── */}
+        <div className="settings-section">
+          <div className="section-label">Saved Places</div>
+          <div className="settings-list">
+            {savedPlaces.length === 0 && (
+              <div
+                style={{ padding: "16px", color: "#94a3b8", fontSize: "13px" }}
+              >
+                No saved places yet. Add one below.
+              </div>
+            )}
+            {savedPlaces.map((place, i) => (
+              <div key={place._id}>
+                <div className="settings-row">
+                  <div className="row-left">
+                    <div className="row-icon">
+                      <i className={`bx ${place.icon}`} />
+                    </div>
+                    <div className="row-text">
+                      <span className="row-label">{place.label}</span>
+                      <span className="row-value">{place.name}</span>
+                    </div>
+                  </div>
+                  <i
+                    className="bx bxs-trash"
+                    style={{
+                      color: "#dc2626",
+                      fontSize: "18px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => deletePlace(place._id)}
+                  />
+                </div>
+                {i < savedPlaces.length - 1 && <div className="row-divider" />}
+              </div>
+            ))}
+            <div className="row-divider" />
+            <div className="settings-row" onClick={() => setModal("addPlace")}>
+              <div className="row-left">
+                <div className="row-icon green-icon">
+                  <i className="bx bxs-plus-circle" />
+                </div>
+                <div className="row-text">
+                  <span className="row-label">Add a Place</span>
+                  <span className="row-value">
+                    Save a location for quick access
+                  </span>
+                </div>
+              </div>
+              <i className="bx bx-chevron-right row-arrow" />
             </div>
           </div>
         </div>
@@ -738,6 +870,139 @@ function Settings() {
                 rows={4}
               />
             </div>
+          }
+        />
+      )}
+
+      {modal === "addPlace" && (
+        <EditModal
+          title="Add a Place"
+          loading={loading}
+          onSave={saveNewPlace}
+          onClose={closeModal}
+          fields={
+            <>
+              <div className="form-group">
+                <label>Label (e.g. Home, Gym, Work)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Home"
+                  value={newPlace.label}
+                  onChange={(e) =>
+                    setNewPlace((p) => ({ ...p, label: e.target.value }))
+                  }
+                  autoFocus
+                />
+              </div>
+              <div className="form-group">
+                <label>Icon</label>
+                <select
+                  value={newPlace.icon}
+                  onChange={(e) =>
+                    setNewPlace((p) => ({ ...p, icon: e.target.value }))
+                  }
+                  style={{
+                    padding: "13px 16px",
+                    borderRadius: "14px",
+                    border: "1.5px solid #e2e8f0",
+                    background: "#f8faff",
+                    color: "#0f172a",
+                    fontSize: "14px",
+                    width: "100%",
+                    outline: "none",
+                    fontFamily: "DM Sans, sans-serif",
+                  }}
+                >
+                  <option value="bxs-map-pin">📍 Pin</option>
+                  <option value="bxs-home">🏠 Home</option>
+                  <option value="bxs-briefcase">💼 Work</option>
+                  <option value="bxs-dumbbell">🏋️ Gym</option>
+                  <option value="bxs-church">⛪ Church</option>
+                  <option value="bxs-graduation">🎓 School</option>
+                  <option value="bxs-shopping-bag">🛍️ Shopping</option>
+                  <option value="bxs-heart">❤️ Favourite</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Search Location</label>
+                <input
+                  type="text"
+                  placeholder="Type a place name in Ghana..."
+                  value={newPlace.name}
+                  onChange={async (e) => {
+                    const value = e.target.value;
+                    setNewPlace((p) => ({
+                      ...p,
+                      name: value,
+                      coordinates: [],
+                    }));
+                    if (value.length < 3) return;
+                    try {
+                      const res = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=${value}&limit=5&countrycodes=gh`,
+                        { headers: { "User-Agent": "KlouseApp/1.0" } },
+                      );
+                      const data = await res.json();
+                      setPlaceSuggestions(data);
+                    } catch {
+                      console.log("Search failed");
+                    }
+                  }}
+                />
+                {placeSuggestions.length > 0 && (
+                  <div
+                    style={{
+                      background: "white",
+                      border: "1.5px solid #e2e8f0",
+                      borderRadius: "12px",
+                      marginTop: "6px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {placeSuggestions.map((s, i) => (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          setNewPlace((p) => ({
+                            ...p,
+                            name: s.display_name.split(",")[0],
+                            coordinates: [parseFloat(s.lon), parseFloat(s.lat)],
+                          }));
+                          setPlaceSuggestions([]);
+                        }}
+                        style={{
+                          padding: "10px 14px",
+                          cursor: "pointer",
+                          fontSize: "13px",
+                          color: "#0f172a",
+                          borderBottom: "1px solid #f1f5f9",
+                        }}
+                      >
+                        <strong>{s.display_name.split(",")[0]}</strong>
+                        <span style={{ color: "#94a3b8", marginLeft: "6px" }}>
+                          {s.display_name.split(",").slice(1, 3).join(",")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {newPlace.coordinates.length > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontSize: "12px",
+                    color: "#16a34a",
+                    marginTop: "4px",
+                  }}
+                >
+                  <i className="bx bxs-check-circle" />
+                  Location selected
+                </div>
+              )}
+            </>
           }
         />
       )}

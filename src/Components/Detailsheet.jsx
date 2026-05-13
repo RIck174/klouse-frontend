@@ -2,6 +2,8 @@ import "../Css/Detailsheet.css";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API = import.meta.env.VITE_API_URL;
+
 function Detailsheet({
   showRideSheet,
   setShowRideSheet,
@@ -17,21 +19,34 @@ function Detailsheet({
   const [estimatedDistance, setEstimatedDistance] = useState(null);
   const [estimatedTime, setEstimatedTime] = useState(null);
   const [recentDestinations, setRecentDestinations] = useState([]);
-  const [savedPlaces, setSavedPlaces] = useState({ home: null, work: null });
+  const [savedPlaces, setSavedPlaces] = useState([]);
   const [notes, setNotes] = useState("");
   const navigate = useNavigate();
   const debounceTimer = useRef(null);
   const fromSuggestion = useRef(false);
 
-  // Load recent destinations and saved places from localStorage
+  // Fetch saved places from database
   useEffect(() => {
+    if (!showRideSheet) return;
+    const fetchPlaces = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/places`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setSavedPlaces(data);
+      } catch (err) {
+        console.log("Failed to fetch saved places");
+      }
+    };
+    fetchPlaces();
+
+    // Still load recent destinations from localStorage
     const recent = JSON.parse(
       localStorage.getItem("recentDestinations") || "[]",
     );
     setRecentDestinations(recent);
-    const home = JSON.parse(localStorage.getItem("savedHome") || "null");
-    const work = JSON.parse(localStorage.getItem("savedWork") || "null");
-    setSavedPlaces({ home, work });
   }, [showRideSheet]);
 
   // Getting destination name from map tap
@@ -141,22 +156,19 @@ function Detailsheet({
     try {
       if (!destination) return alert("Please pick a destination");
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/ride/request`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            destination: [destination[1], destination[0]],
-            destinationName,
-            vehicleType,
-            notes,
-          }),
+      const response = await fetch(`${API}/ride/request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          destination: [destination[1], destination[0]],
+          destinationName,
+          vehicleType,
+          notes,
+        }),
+      });
       const data = await response.json();
       if (data.ride?._id) {
         saveToRecent(destinationName, destination);
@@ -228,35 +240,27 @@ function Detailsheet({
             </div>
           )}
 
-          {/* Saved places */}
-          {!showSuggestions && (
+          {/* Saved places from database */}
+          {!showSuggestions && savedPlaces.length > 0 && (
             <div className="saved-places-row">
-              {savedPlaces.home && (
+              {savedPlaces.map((place) => (
                 <div
+                  key={place._id}
                   className="saved-place-chip"
                   onClick={() => {
                     fromSuggestion.current = true;
-                    setDestination(savedPlaces.home.coords);
-                    setDestinationName("Home");
+                    // coordinates stored as [lng, lat] so flip for Leaflet
+                    setDestination([
+                      place.coordinates[1],
+                      place.coordinates[0],
+                    ]);
+                    setDestinationName(place.label);
                   }}
                 >
-                  <i className="bx bxs-home" />
-                  <span>Home</span>
+                  <i className={`bx ${place.icon}`} />
+                  <span>{place.label}</span>
                 </div>
-              )}
-              {savedPlaces.work && (
-                <div
-                  className="saved-place-chip"
-                  onClick={() => {
-                    fromSuggestion.current = true;
-                    setDestination(savedPlaces.work.coords);
-                    setDestinationName("Work");
-                  }}
-                >
-                  <i className="bx bxs-briefcase" />
-                  <span>Work</span>
-                </div>
-              )}
+              ))}
             </div>
           )}
 

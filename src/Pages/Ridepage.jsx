@@ -50,6 +50,7 @@ function RidePage({ showRideSheet, setShowRideSheet, onMenuClick }) {
   const [destinationName, setDestinationName] = useState("");
   const [vehicleType, setVehicleType] = useState("Car");
   const [userProfile, setUserProfile] = useState(null);
+  const [savedPlaces, setSavedPlaces] = useState([]);
   const navigate = useNavigate();
   const lastSentPosition = useRef(null);
 
@@ -70,6 +71,22 @@ function RidePage({ showRideSheet, setShowRideSheet, onMenuClick }) {
       }
     };
     fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const fetchPlaces = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API}/places`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setSavedPlaces(data);
+      } catch (err) {
+        console.log("Failed to fetch saved places");
+      }
+    };
+    fetchPlaces();
   }, []);
 
   // Watch user location
@@ -256,22 +273,16 @@ function RidePage({ showRideSheet, setShowRideSheet, onMenuClick }) {
             <span className="panel-search-placeholder">Where to?</span>
           </div>
           <div className="panel-chips">
-            {JSON.parse(localStorage.getItem("savedHome") || "null") && (
+            {savedPlaces.slice(0, 3).map((place) => (
               <div
+                key={place._id}
                 className="panel-chip"
                 onClick={() => setShowRideSheet(true)}
               >
-                <i className="bx bxs-home" /> Home
+                <i className={`bx ${place.icon}`} />
+                {place.label}
               </div>
-            )}
-            {JSON.parse(localStorage.getItem("savedWork") || "null") && (
-              <div
-                className="panel-chip"
-                onClick={() => setShowRideSheet(true)}
-              >
-                <i className="bx bxs-briefcase" /> Work
-              </div>
-            )}
+            ))}
           </div>
         </div>
       )}
