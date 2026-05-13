@@ -8,11 +8,13 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import useActiveRide from "../hooks/useActiveRide";
 import useRideTracking from "../hooks/useRideTracking";
 import socket from "../socket";
+import Sidebar from "../Components/Sidebar";
 
 function Rides() {
   const { id: rideId } = useParams();
   const navigate = useNavigate();
   const [ride, setRide] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useActiveRide(rideId);
   const {
@@ -80,6 +82,14 @@ function Rides() {
   if (!rideId) {
     return (
       <div className="rides-container">
+        <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+        <button
+          className="float-btn float-menu"
+          onClick={() => setSidebarOpen(true)}
+          style={{ position: "absolute", top: 16, left: 16, zIndex: 1000 }}
+        >
+          <i className="bx bx-menu" />
+        </button>
         <div className="no-ride-overlay">
           <i
             className="bx bxs-car"
@@ -101,7 +111,14 @@ function Rides() {
   // ── Has rideId ──
   return (
     <div className="rides-container">
-      <Navigation />
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <button
+        className="float-btn float-menu"
+        onClick={() => setSidebarOpen(true)}
+        style={{ position: "absolute", top: 16, left: 16, zIndex: 1000 }}
+      >
+        <i className="bx bx-menu" />
+      </button>
 
       {userPosition ? (
         <MapContainer
