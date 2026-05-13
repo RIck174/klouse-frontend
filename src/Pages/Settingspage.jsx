@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Sidebar from "../Components/Sidebar";
 import "../Css/Settingspage.css";
 import "boxicons/css/boxicons.min.css";
 
@@ -65,6 +66,7 @@ function Settings() {
     name: "",
     coordinates: [],
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [placeSuggestions, setPlaceSuggestions] = useState([]);
   const navigate = useNavigate();
 
@@ -129,18 +131,33 @@ function Settings() {
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setPreview(URL.createObjectURL(file));
+
+    // Show preview immediately
+    const previewUrl = URL.createObjectURL(file);
+    setPreview(previewUrl);
     setLoading(true);
+    setError("");
+    setSuccess("");
+
     try {
+      // Step 1 — Upload to Cloudinary
       const fd = new FormData();
       fd.append("file", file);
       fd.append("upload_preset", "klouse_profiles");
+
       const cRes = await fetch(
         `https://api.cloudinary.com/v1_1/dkalpzvt0/image/upload`,
         { method: "POST", body: fd },
       );
+
+      if (!cRes.ok) throw new Error("Cloudinary upload failed");
+
       const cJson = await cRes.json();
       const imgUrl = cJson.secure_url;
+
+      if (!imgUrl) throw new Error("No image URL returned");
+
+      // Step 2 — Save URL to backend
       const token = localStorage.getItem("token");
       const updateRes = await fetch(`${API}/user/profile-image`, {
         method: "PUT",
@@ -151,13 +168,18 @@ function Settings() {
         body: JSON.stringify({ imgUrl }),
       });
 
-      if (!updateRes.ok) throw new Error("Failed to save image");
+      if (!updateRes.ok) {
+        const errData = await updateRes.json();
+        throw new Error(errData.message || "Failed to save image");
+      }
 
+      // Step 3 — Update UI with real URL
       setUser((p) => ({ ...p, profileImage: imgUrl }));
       setPreview(null);
-      setSuccess("Photo updated");
-    } catch {
-      setError("Failed to upload photo");
+      setSuccess("Photo updated!");
+    } catch (err) {
+      console.error("Avatar upload error:", err);
+      setError(err.message || "Failed to upload photo");
       setPreview(null);
     } finally {
       setLoading(false);
@@ -337,6 +359,58 @@ function Settings() {
 
   return (
     <div className="settings-page">
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+
+      {/* Top bar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "60px",
+          background: "white",
+          borderBottom: "1px solid #f1f5f9",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 16px",
+          gap: "14px",
+          zIndex: 1000,
+          boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
+        }}
+      >
+        <button
+          onClick={() => setSidebarOpen(true)}
+          style={{
+            width: 40,
+            height: 40,
+            border: "none",
+            background: "transparent",
+            fontSize: 24,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#0f172a",
+            borderRadius: "12px",
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          <i className="bx bx-menu" />
+        </button>
+        <span
+          style={{
+            fontFamily: "'Syne', sans-serif",
+            fontSize: "18px",
+            fontWeight: 800,
+            color: "#0f172a",
+            letterSpacing: "-0.3px",
+          }}
+        >
+          Settings
+        </span>
+      </div>
+
       <div className="settings-content">
         {/* Toast */}
         {success && (

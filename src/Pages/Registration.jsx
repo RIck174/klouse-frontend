@@ -184,7 +184,7 @@ function Registration() {
 
         {/* ── LOGIN FORM ── */}
         {activeTab === "login" && (
-          <>
+          <div className="reg-form-content" key="login">
             <h2 className="reg-form-title">Welcome back</h2>
             <p className="reg-form-subtitle">
               Sign in to continue your journey
@@ -259,12 +259,12 @@ function Registration() {
               </svg>
               Continue with Google
             </button>
-          </>
+          </div>
         )}
 
         {/* ── REGISTER FORM ── */}
         {activeTab === "register" && (
-          <>
+          <div className="reg-form-content" key="register">
             <h2 className="reg-form-title">Create account</h2>
             <p className="reg-form-subtitle">
               Join Klouse and start riding today
@@ -381,7 +381,7 @@ function Registration() {
               </svg>
               Continue with Google
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>
