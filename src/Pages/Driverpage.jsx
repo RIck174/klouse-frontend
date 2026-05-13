@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import socket from "../socket";
 import "../Css/Driverpage.css";
 import "boxicons/css/boxicons.min.css";
+import Sidebar from "../Components/Sidebar";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -25,6 +26,7 @@ function DriverPage() {
   const [toast, setToast] = useState(null);
   const locationWatcher = useRef(null);
   const locationInterval = useRef(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Fetch driver profile
   useEffect(() => {
@@ -212,8 +214,24 @@ function DriverPage() {
 
   return (
     <div className="driver-page">
+      {/* ── Sidebar ── */}
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+
       {/* ── Floating brand badge top-left ── */}
       <div className="driver-float-brand">
+        <button
+          className="float-btn"
+          onClick={() => setSidebarOpen(true)}
+          style={{
+            width: 34,
+            height: 34,
+            fontSize: 20,
+            boxShadow: "none",
+            background: "transparent",
+          }}
+        >
+          <i className="bx bx-menu" />
+        </button>
         <span className="driver-brand-name">
           Klouse <span>Driver</span>
         </span>
