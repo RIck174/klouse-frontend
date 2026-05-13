@@ -179,38 +179,16 @@
 }
 
 /* ── Form panel — slides up ── */
-/* Slide up animation on panel */
 .reg-panel {
-    animation: slideUpPanel 0.5s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
-}
-
-@keyframes slideUpPanel {
-    from {
-        transform: translateY(60px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* Tab content slide */
-.reg-form-content {
-    animation: slideUpForm 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
-}
-
-@keyframes slideUpForm {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+    position: relative;
+    z-index: 10;
+    background: white;
+    border-radius: 28px 28px 0 0;
+    flex: 1;
+    padding: 32px 24px 48px;
+    margin-top: -20px;
+    overflow-y: auto;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.2);
 }
 
 /* Tab switcher */
