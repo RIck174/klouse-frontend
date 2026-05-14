@@ -143,7 +143,7 @@ function Settings() {
       // Step 1 — Upload to Cloudinary
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("upload_preset", "klouse_profiles");
+      fd.append("upload_preset", "klouse");
 
       const cRes = await fetch(
         `https://api.cloudinary.com/v1_1/dkalpzvt0/image/upload`,
