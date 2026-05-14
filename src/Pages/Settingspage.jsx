@@ -175,7 +175,7 @@ function Settings() {
 
       // Step 3 — Update UI with real URL
       setUser((p) => ({ ...p, profileImage: imgUrl }));
-      setPreview(null);
+      setTimeout(() => setPreview(null), 100);
       setSuccess("Photo updated!");
     } catch (err) {
       console.error("Avatar upload error:", err);
@@ -619,10 +619,7 @@ function Settings() {
           <div className="settings-section">
             <div className="section-label">Driver</div>
             <div className="settings-list">
-              <div
-                className="settings-row"
-                onClick={() => navigate("/driver-signup")}
-              >
+              <div className="settings-row" onClick={() => navigate("/driver")}>
                 <div className="row-left">
                   <div className="row-icon accent-icon">
                     <i className="bx bxs-car" />
@@ -642,7 +639,10 @@ function Settings() {
           <div className="settings-section">
             <div className="section-label">Drive with Klouse</div>
             <div className="settings-list">
-              <div className="settings-row" onClick={() => navigate("/driver")}>
+              <div
+                className="settings-row"
+                onClick={() => navigate("/driver-signup")}
+              >
                 <div className="row-left">
                   <div className="row-icon accent-icon">
                     <i className="bx bxs-car" />
