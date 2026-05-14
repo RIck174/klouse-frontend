@@ -254,7 +254,7 @@ function Detailsheet({
                       place.coordinates[1],
                       place.coordinates[0],
                     ]);
-                    setDestinationName(place.label);
+                    setDestinationName(place.name);
                   }}
                 >
                   <i className={`bx ${place.icon}`} />

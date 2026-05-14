@@ -6,6 +6,7 @@ import socket from "../socket";
 import "../Css/Driverpage.css";
 import "boxicons/css/boxicons.min.css";
 import Sidebar from "../Components/Sidebar";
+import L from "leaflet";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -212,6 +213,24 @@ function DriverPage() {
       ]
     : null;
 
+  const carIcon = L.divIcon({
+    className: "",
+    html: `<div style="
+    background: #1a56db;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(26,86,219,0.4);
+    border: 2px solid white;
+    font-size: 18px;
+  ">🚗</div>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+  });
+
   return (
     <div className="driver-page">
       {/* ── Sidebar ── */}
@@ -264,7 +283,7 @@ function DriverPage() {
               detectRetina={true}
             />
             <LiveCenter position={driverPosition} />
-            <Marker position={driverPosition}>
+            <Marker position={driverPosition} icon={carIcon}>
               <Popup>You are here</Popup>
             </Marker>
             {pickupCoords && (
@@ -320,6 +339,18 @@ function DriverPage() {
               <div className="request-row">
                 <i className="bx bxs-circle pickup-col" />
                 <span>Pickup nearby</span>
+                <span
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: "11px",
+                    color: "#94a3b8",
+                    background: "#f1f5f9",
+                    padding: "2px 8px",
+                    borderRadius: "20px",
+                  }}
+                >
+                  {pendingRide?.vehicleType}
+                </span>
               </div>
               <div className="request-divider-line" />
               <div className="request-row">
@@ -334,12 +365,6 @@ function DriverPage() {
                   </span>
                 </div>
               ) : null}
-              <div className="request-row">
-                <i className="bx bxs-car" style={{ color: "#94a3b8" }} />
-                <span style={{ color: "#64748b", fontSize: "12px" }}>
-                  {pendingRide?.vehicleType}
-                </span>
-              </div>
             </div>
             <div className="request-actions">
               <button
