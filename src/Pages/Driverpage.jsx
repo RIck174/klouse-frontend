@@ -215,28 +215,36 @@ function DriverPage() {
 
   const carIcon = L.divIcon({
     className: "",
-    html: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 64 64">
-    <!-- Car body -->
-    <rect x="12" y="16" width="40" height="32" rx="8" ry="8" fill="#1a56db"/>
-    <!-- Windshield front -->
-    <rect x="18" y="20" width="28" height="10" rx="3" ry="3" fill="#bfdbfe" opacity="0.9"/>
-    <!-- Windshield rear -->
-    <rect x="18" y="34" width="28" height="8" rx="3" ry="3" fill="#bfdbfe" opacity="0.6"/>
-    <!-- Left wheels -->
-    <rect x="6" y="18" width="10" height="8" rx="3" ry="3" fill="#0f172a"/>
-    <rect x="6" y="38" width="10" height="8" rx="3" ry="3" fill="#0f172a"/>
-    <!-- Right wheels -->
-    <rect x="48" y="18" width="10" height="8" rx="3" ry="3" fill="#0f172a"/>
-    <rect x="48" y="38" width="10" height="8" rx="3" ry="3" fill="#0f172a"/>
-    <!-- Headlights -->
-    <rect x="14" y="17" width="8" height="4" rx="2" fill="#fef08a"/>
-    <rect x="42" y="17" width="8" height="4" rx="2" fill="#fef08a"/>
-    <!-- Tail lights -->
-    <rect x="14" y="43" width="8" height="4" rx="2" fill="#fca5a5"/>
-    <rect x="42" y="43" width="8" height="4" rx="2" fill="#fca5a5"/>
-  </svg>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
+    html: `<div style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3))">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="48" viewBox="0 0 100 160">
+      <!-- Car body main shape -->
+      <rect x="10" y="30" width="80" height="100" rx="20" ry="20" fill="#1a56db"/>
+      <!-- Cabin/roof -->
+      <rect x="20" y="45" width="60" height="55" rx="12" ry="12" fill="#1e40af"/>
+      <!-- Front windshield -->
+      <rect x="25" y="48" width="50" height="22" rx="6" ry="6" fill="#bfdbfe" opacity="0.85"/>
+      <!-- Rear windshield -->
+      <rect x="25" y="76" width="50" height="18" rx="6" ry="6" fill="#bfdbfe" opacity="0.5"/>
+      <!-- Front bumper -->
+      <rect x="15" y="20" width="70" height="16" rx="8" ry="8" fill="#1e40af"/>
+      <!-- Rear bumper -->
+      <rect x="15" y="124" width="70" height="16" rx="8" ry="8" fill="#1e40af"/>
+      <!-- Front headlights -->
+      <rect x="14" y="22" width="20" height="8" rx="4" fill="#fef9c3"/>
+      <rect x="66" y="22" width="20" height="8" rx="4" fill="#fef9c3"/>
+      <!-- Rear lights -->
+      <rect x="14" y="128" width="20" height="8" rx="4" fill="#fca5a5"/>
+      <rect x="66" y="128" width="20" height="8" rx="4" fill="#fca5a5"/>
+      <!-- Left wheels -->
+      <rect x="0" y="35" width="14" height="28" rx="5" fill="#0f172a"/>
+      <rect x="0" y="100" width="14" height="28" rx="5" fill="#0f172a"/>
+      <!-- Right wheels -->
+      <rect x="86" y="35" width="14" height="28" rx="5" fill="#0f172a"/>
+      <rect x="86" y="100" width="14" height="28" rx="5" fill="#0f172a"/>
+    </svg>
+  </div>`,
+    iconSize: [28, 48],
+    iconAnchor: [14, 24],
   });
 
   return (
