@@ -215,20 +215,28 @@ function DriverPage() {
 
   const carIcon = L.divIcon({
     className: "",
-    html: `<div style="
-    background: #1a56db;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(26,86,219,0.4);
-    border: 2px solid white;
-    font-size: 18px;
-  ">🚗</div>`,
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 64 64">
+    <!-- Car body -->
+    <rect x="12" y="16" width="40" height="32" rx="8" ry="8" fill="#1a56db"/>
+    <!-- Windshield front -->
+    <rect x="18" y="20" width="28" height="10" rx="3" ry="3" fill="#bfdbfe" opacity="0.9"/>
+    <!-- Windshield rear -->
+    <rect x="18" y="34" width="28" height="8" rx="3" ry="3" fill="#bfdbfe" opacity="0.6"/>
+    <!-- Left wheels -->
+    <rect x="6" y="18" width="10" height="8" rx="3" ry="3" fill="#0f172a"/>
+    <rect x="6" y="38" width="10" height="8" rx="3" ry="3" fill="#0f172a"/>
+    <!-- Right wheels -->
+    <rect x="48" y="18" width="10" height="8" rx="3" ry="3" fill="#0f172a"/>
+    <rect x="48" y="38" width="10" height="8" rx="3" ry="3" fill="#0f172a"/>
+    <!-- Headlights -->
+    <rect x="14" y="17" width="8" height="4" rx="2" fill="#fef08a"/>
+    <rect x="42" y="17" width="8" height="4" rx="2" fill="#fef08a"/>
+    <!-- Tail lights -->
+    <rect x="14" y="43" width="8" height="4" rx="2" fill="#fca5a5"/>
+    <rect x="42" y="43" width="8" height="4" rx="2" fill="#fca5a5"/>
+  </svg>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
   });
 
   return (
