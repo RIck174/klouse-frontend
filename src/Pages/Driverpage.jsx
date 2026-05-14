@@ -324,7 +324,21 @@ function DriverPage() {
               <div className="request-divider-line" />
               <div className="request-row">
                 <i className="bx bxs-map dest-col" />
-                <span>Destination set</span>
+                <span>{pendingRide?.destinationName || "Destination set"}</span>
+              </div>
+              {pendingRide?.notes ? (
+                <div className="request-row">
+                  <i className="bx bxs-note" style={{ color: "#94a3b8" }} />
+                  <span style={{ color: "#64748b", fontSize: "12px" }}>
+                    {pendingRide.notes}
+                  </span>
+                </div>
+              ) : null}
+              <div className="request-row">
+                <i className="bx bxs-car" style={{ color: "#94a3b8" }} />
+                <span style={{ color: "#64748b", fontSize: "12px" }}>
+                  {pendingRide?.vehicleType}
+                </span>
               </div>
             </div>
             <div className="request-actions">
