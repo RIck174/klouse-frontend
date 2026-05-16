@@ -177,6 +177,32 @@ function DriverPage() {
     }
   };
 
+  function PulsingCircle({ position }) {
+    const map = useMap();
+
+    useEffect(() => {
+      if (!position) return;
+
+      const el = document.createElement("div");
+      el.className = "pulse-ring";
+
+      const marker = L.marker(position, {
+        icon: L.divIcon({
+          className: "",
+          html: el.outerHTML,
+          iconSize: [200, 200],
+          iconAnchor: [100, 100],
+        }),
+        interactive: false,
+        zIndexOffset: -1,
+      }).addTo(map);
+
+      return () => map.removeLayer(marker);
+    }, [position, map]);
+
+    return null;
+  }
+
   const completeRide = async () => {
     if (!activeRide) return;
     try {
@@ -284,30 +310,8 @@ function DriverPage() {
               <Popup>You are here</Popup>
             </Marker>
 
-            {isOnline && !activeRide && (
-              <>
-                <Circle
-                  center={driverPosition}
-                  radius={800}
-                  pathOptions={{
-                    color: "#22c55e",
-                    fillColor: "#22c55e",
-                    fillOpacity: 0.12,
-                    weight: 2,
-                  }}
-                />
-                <Circle
-                  center={driverPosition}
-                  radius={900}
-                  pathOptions={{
-                    color: "#22c55e",
-                    fillColor: "#22c55e",
-                    fillOpacity: 0.05,
-                    weight: 1,
-                    dashArray: "6 4",
-                  }}
-                />
-              </>
+            {isOnline && !activeRide && driverPosition && (
+              <PulsingCircle position={driverPosition} />
             )}
 
             {pickupCoords && (
