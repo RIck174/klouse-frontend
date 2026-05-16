@@ -285,17 +285,31 @@ function DriverPage() {
             </Marker>
 
             {isOnline && !activeRide && (
-              <Circle
-                center={driverPosition}
-                radius={800}
-                pathOptions={{
-                  color: "#22c55e",
-                  fillColor: "#22c55e",
-                  fillOpacity: 0.08,
-                  weight: 1.5,
-                }}
-              />
+              <>
+                <Circle
+                  center={driverPosition}
+                  radius={800}
+                  pathOptions={{
+                    color: "#22c55e",
+                    fillColor: "#22c55e",
+                    fillOpacity: 0.12,
+                    weight: 2,
+                  }}
+                />
+                <Circle
+                  center={driverPosition}
+                  radius={900}
+                  pathOptions={{
+                    color: "#22c55e",
+                    fillColor: "#22c55e",
+                    fillOpacity: 0.05,
+                    weight: 1,
+                    dashArray: "6 4",
+                  }}
+                />
+              </>
             )}
+
             {pickupCoords && (
               <Marker position={pickupCoords}>
                 <Popup>Pickup</Popup>
