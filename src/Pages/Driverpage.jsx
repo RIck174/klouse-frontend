@@ -335,13 +335,9 @@ function DriverPage() {
               detectRetina={true}
             />
             <LiveCenter position={driverPosition} />
-            <ReactLeafletTrackingMarker
-              icon={carIcon}
-              position={driverPosition}
-              previousPosition={prevPositionRef.current || driverPosition}
-              duration={1000}
-              keepAtCenter={false}
-            />
+            <Marker position={driverPosition} icon={carIcon}>
+              <Popup>You are here</Popup>
+            </Marker>
 
             {isOnline && !activeRide && driverPosition && (
               <PulsingCircle position={driverPosition} />
