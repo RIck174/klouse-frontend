@@ -335,6 +335,57 @@ function DriverPage() {
       ]
     : null;
 
+  const markArrived = async () => {
+    if (!activeRide) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/ride/arrived/${activeRide._id}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setActiveRide(data.ride);
+        showToast("Rider notified you've arrived!", "success");
+      }
+    } catch (err) {
+      console.error("Failed to mark arrived", err);
+    }
+  };
+
+  const startRide = async () => {
+    if (!activeRide) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/ride/start/${activeRide._id}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setActiveRide(data.ride);
+        // Now fetch route from pickup to destination
+        if (
+          activeRide.pickup?.coordinates &&
+          activeRide.destination?.coordinates
+        ) {
+          const pickup = [
+            activeRide.pickup.coordinates[1],
+            activeRide.pickup.coordinates[0],
+          ];
+          const destination = [
+            activeRide.destination.coordinates[1],
+            activeRide.destination.coordinates[0],
+          ];
+          fetchRouteCoords(pickup, destination);
+        }
+        showToast("Ride started!", "success");
+      }
+    } catch (err) {
+      console.error("Failed to start ride", err);
+    }
+  };
+
   const carIcon = L.divIcon({
     className: "",
     html: `<div style="
@@ -532,7 +583,13 @@ function DriverPage() {
           <div className="active-ride-card">
             <div className="active-header">
               <div className="active-pulse" />
-              <span className="active-title">Ride in Progress</span>
+              <span className="active-title">
+                {activeRide.status === "Arrived"
+                  ? "Waiting for Rider"
+                  : activeRide.status === "InProgress"
+                    ? "Ride in Progress"
+                    : "Heading to Pickup"}
+              </span>
               <span className="active-fare">
                 GH₵ {activeRide.fare?.toFixed(2) ?? "—"}
               </span>
@@ -556,10 +613,30 @@ function DriverPage() {
                 </div>
               </div>
             </div>
-            <button className="btn-complete" onClick={completeRide}>
-              <i className="bx bxs-flag-checkered" />
-              Mark as Completed
-            </button>
+
+            {/* Heading to pickup */}
+            {activeRide.status === "Accepted" && (
+              <button className="btn-arrived" onClick={markArrived}>
+                <i className="bx bxs-map-pin" />
+                I've Arrived at Pickup
+              </button>
+            )}
+
+            {/* Arrived - waiting for rider */}
+            {activeRide.status === "Arrived" && (
+              <button className="btn-start" onClick={startRide}>
+                <i className="bx bxs-right-arrow-circle" />
+                Start Ride
+              </button>
+            )}
+
+            {/* Ride in progress */}
+            {activeRide.status === "InProgress" && (
+              <button className="btn-complete" onClick={completeRide}>
+                <i className="bx bxs-flag-checkered" />
+                Mark as Completed
+              </button>
+            )}
           </div>
         )}
       </div>

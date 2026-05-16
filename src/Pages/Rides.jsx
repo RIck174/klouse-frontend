@@ -24,6 +24,7 @@ function Rides() {
     distance,
     driverInfo,
     rideStatus,
+    setRideStatus,
   } = useRideTracking(rideId);
 
   const pickupLatLng = useMemo(() => {
@@ -51,6 +52,11 @@ function Rides() {
         if (!res.ok) return;
         const data = await res.json();
         setRide(data);
+        // Set initial status from fetched ride
+        if (data.status === "Accepted") setRideStatus("accepted");
+        else if (data.status === "Arrived") setRideStatus("arrived");
+        else if (data.status === "InProgress") setRideStatus("inProgress");
+        else if (data.status === "Searching") setRideStatus("searching");
       } catch (err) {
         console.error("Failed to fetch ride:", err);
       }
@@ -147,7 +153,7 @@ function Rides() {
 
       {/* Bottom Sheet */}
       <div className="ride-bottom-sheet">
-        {/* Searching state */}
+        {/* Searching */}
         {rideStatus === "searching" && (
           <div className="sheet-searching">
             <div className="searching-spinner" />
@@ -159,7 +165,7 @@ function Rides() {
           </div>
         )}
 
-        {/* Accepted state */}
+        {/* Accepted - driver heading to pickup */}
         {rideStatus === "accepted" && (
           <div className="sheet-accepted">
             <div className="driver-info">
@@ -178,17 +184,84 @@ function Rides() {
                 <span className="fare-amount">GH₵ {ride?.fare ?? "—"}</span>
               </div>
             </div>
-
             <div className="eta-row">
               <i className="bx bxs-time" />
               {eta != null
                 ? `Driver arriving in ${eta} min · ${distance} km away`
                 : "Calculating ETA..."}
             </div>
-
             <button className="cancel-btn" onClick={cancelRide}>
               <i className="bx bx-x" /> Cancel Ride
             </button>
+          </div>
+        )}
+
+        {/* Driver arrived */}
+        {rideStatus === "arrived" && (
+          <div className="sheet-accepted">
+            <div className="driver-info">
+              <div className="driver-avatar">
+                <i className="bx bxs-user" />
+              </div>
+              <div className="driver-details">
+                <h3>{driverInfo?.name ?? "Your Driver"}</h3>
+                <span className="driver-rating">
+                  <i className="bx bxs-star" />
+                  {driverInfo?.rating ?? "5.0"}
+                </span>
+              </div>
+              <div className="fare-box">
+                <span className="fare-label">Fare</span>
+                <span className="fare-amount">GH₵ {ride?.fare ?? "—"}</span>
+              </div>
+            </div>
+            <div
+              className="eta-row"
+              style={{
+                background: "#f0fdf4",
+                borderColor: "#bbf7d0",
+                color: "#16a34a",
+              }}
+            >
+              <i className="bx bxs-map-pin" style={{ color: "#16a34a" }} />
+              Your driver has arrived! Head to the pickup point.
+            </div>
+            <button className="cancel-btn" onClick={cancelRide}>
+              <i className="bx bx-x" /> Cancel Ride
+            </button>
+          </div>
+        )}
+
+        {/* Ride in progress */}
+        {rideStatus === "inProgress" && (
+          <div className="sheet-accepted">
+            <div className="driver-info">
+              <div className="driver-avatar">
+                <i className="bx bxs-user" />
+              </div>
+              <div className="driver-details">
+                <h3>{driverInfo?.name ?? "Your Driver"}</h3>
+                <span className="driver-rating">
+                  <i className="bx bxs-star" />
+                  {driverInfo?.rating ?? "5.0"}
+                </span>
+              </div>
+              <div className="fare-box">
+                <span className="fare-label">Fare</span>
+                <span className="fare-amount">GH₵ {ride?.fare ?? "—"}</span>
+              </div>
+            </div>
+            <div
+              className="eta-row"
+              style={{
+                background: "#eff6ff",
+                borderColor: "#bfdbfe",
+                color: "#1a56db",
+              }}
+            >
+              <i className="bx bxs-navigation" style={{ color: "#1a56db" }} />
+              Ride in progress — heading to your destination
+            </div>
           </div>
         )}
       </div>

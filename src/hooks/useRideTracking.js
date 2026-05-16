@@ -10,28 +10,46 @@ function useRideTracking(rideId) {
   const [driverInfo, setDriverInfo] = useState(null);
   const [rideStatus, setRideStatus] = useState("searching");
 
-  //Listen for driver location
+  // Listen for driver location
   useEffect(() => {
     if (!rideId) return;
 
     socket.emit("rideRoom", rideId);
+
     socket.on("driverLocationUpdated", ({ lat, lng }) => {
       setDriverPosition([lat, lng]);
     });
 
-    return () => socket.off("driverLocationUpdated");
+    socket.on("rideAccepted", ({ driverName }) => {
+      setDriverInfo({ name: driverName });
+      setRideStatus("accepted");
+    });
+
+    socket.on("driverArrived", () => {
+      setRideStatus("arrived");
+    });
+
+    socket.on("rideStarted", () => {
+      setRideStatus("inProgress");
+    });
+
+    return () => {
+      socket.off("driverLocationUpdated");
+      socket.off("rideAccepted");
+      socket.off("driverArrived");
+      socket.off("rideStarted");
+    };
   }, [rideId]);
 
-  // watch user's gps location
+  // Watch user GPS
   useEffect(() => {
     const watcher = navigator.geolocation.watchPosition(({ coords }) => {
       setUserPosition([coords.latitude, coords.longitude]);
     });
-
     return () => navigator.geolocation.clearWatch(watcher);
   }, []);
 
-  //Recalculating distance when position changes
+  // Recalculate distance and ETA when positions change
   useEffect(() => {
     if (!userPosition || !driverPosition) return;
 
@@ -42,19 +60,8 @@ function useRideTracking(rideId) {
 
     const km = meters / 1000;
     setDistance(km.toFixed(2));
-
-    const averageSpeedKmh = 30;
-    setEta(Math.round((km / averageSpeedKmh) * 60));
+    setEta(Math.round((km / 30) * 60));
   }, [driverPosition, userPosition]);
-
-  //listen for driver accepting ride
-  useEffect(() => {
-    socket.on("rideAccepted", ({ driverName, driverRating }) => {
-      setDriverInfo({ name: driverName, rating: driverRating });
-      setRideStatus("accepted");
-    });
-    return () => socket.off("rideAccepted");
-  }, []);
 
   return {
     driverPosition,
@@ -63,6 +70,8 @@ function useRideTracking(rideId) {
     distance,
     driverInfo,
     rideStatus,
+    setRideStatus,
   };
 }
+
 export default useRideTracking;
