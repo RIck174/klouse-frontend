@@ -187,7 +187,7 @@ function DriverPage() {
         });
 
         if (activeRide) {
-          socket.emit("driverLocation", {
+          socket.emit("driverLocationUpdate", {
             rideId: activeRide._id,
             lat: driverPosition[0],
             lng: driverPosition[1],
@@ -279,6 +279,14 @@ function DriverPage() {
         setActiveRide(data.ride);
         setPendingRide(null);
         socket.emit("rideRoom", rideId);
+        // Immediately send current position to rider
+        if (driverPosition) {
+          socket.emit("driverLocationUpdate", {
+            rideId,
+            lat: driverPosition[0],
+            lng: driverPosition[1],
+          });
+        }
         showToast("Ride accepted!", "success");
 
         // Fetch route from driver to pickup

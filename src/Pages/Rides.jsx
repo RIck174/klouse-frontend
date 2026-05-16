@@ -141,7 +141,9 @@ function Rides() {
             detectRetina={true}
           />
           <Marker position={userPosition} />
-          {pickupLatLng && <Marker position={pickupLatLng} />}
+          {pickupLatLng && rideStatus !== "inProgress" && (
+            <Marker position={pickupLatLng} />
+          )}
           {destinationLatLng && <Marker position={destinationLatLng} />}
           {pickupLatLng && destinationLatLng && (
             <ShowRoute pickup={pickupLatLng} destination={destinationLatLng} />
