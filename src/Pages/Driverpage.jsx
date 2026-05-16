@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import { useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import socket from "../socket";
@@ -216,24 +216,16 @@ function DriverPage() {
   const carIcon = L.divIcon({
     className: "",
     html: `<div style="
-    width: 40px;
-    height: 40px;
-    background: white;
-    border-radius: 50%;
-    border: 2px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
   ">
-    <img 
-      src="https://cdn-icons-png.flaticon.com/512/744/744465.png" 
-      style="width: 26px; height: 26px;"
-    />
+    <img src="https://res.cloudinary.com/dkalpzvt0/image/upload/v1778893145/vecteezy_white-suv-on-transparent-background-3d-rendering_25309495_ev3bhe.webp" style="width: 44px; height: 44px; object-fit: contain;"/>
   </div>`,
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
   });
 
   return (
@@ -291,6 +283,19 @@ function DriverPage() {
             <Marker position={driverPosition} icon={carIcon}>
               <Popup>You are here</Popup>
             </Marker>
+
+            {isOnline && !activeRide && (
+              <Circle
+                center={driverPosition}
+                radius={800}
+                pathOptions={{
+                  color: "#22c55e",
+                  fillColor: "#22c55e",
+                  fillOpacity: 0.08,
+                  weight: 1.5,
+                }}
+              />
+            )}
             {pickupCoords && (
               <Marker position={pickupCoords}>
                 <Popup>Pickup</Popup>
