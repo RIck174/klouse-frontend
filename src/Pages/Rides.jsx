@@ -9,6 +9,7 @@ import useActiveRide from "../hooks/useActiveRide";
 import useRideTracking from "../hooks/useRideTracking";
 import socket from "../socket";
 import Sidebar from "../Components/Sidebar";
+import L from "leaflet";
 
 function Rides() {
   const { id: rideId } = useParams();
@@ -145,7 +146,25 @@ function Rides() {
           {pickupLatLng && destinationLatLng && (
             <ShowRoute pickup={pickupLatLng} destination={destinationLatLng} />
           )}
-          {driverPosition && <Marker position={driverPosition} />}
+          {driverPosition && (
+            <Marker
+              position={driverPosition}
+              icon={L.divIcon({
+                className: "",
+                html: `<div style="
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <img src="https://res.cloudinary.com/dkalpzvt0/image/upload/v1778893145/vecteezy_white-suv-on-transparent-background-3d-rendering_25309495_ev3bhe.webp" style="width: 44px; height: 44px; object-fit: contain;"/>
+      </div>`,
+                iconSize: [44, 44],
+                iconAnchor: [22, 22],
+              })}
+            />
+          )}
         </MapContainer>
       ) : (
         <div className="map-loading">Locating you...</div>
