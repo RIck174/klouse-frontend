@@ -1,6 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import socket from "../socket";
 import "../Css/Driverpage.css";
@@ -52,6 +58,7 @@ function DriverPage() {
   const [profile, setProfile] = useState(null);
   const [toast, setToast] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [routeCoords, setRouteCoords] = useState([]);
 
   const locationWatcher = useRef(null);
   const locationInterval = useRef(null);
@@ -73,6 +80,20 @@ function DriverPage() {
 
     return (toDeg(Math.atan2(y, x)) + 360) % 360;
   }
+
+  useEffect(() => {
+    if (!driverPosition) return;
+
+    if (routeCoords.length > 1) {
+      const angle = getBearingFromRoute(driverPosition, routeCoords);
+      setBearing(angle);
+    } else if (prevPositionRef.current) {
+      const angle = calculateBearing(prevPositionRef.current, driverPosition);
+      setBearing(angle);
+    }
+
+    prevPositionRef.current = driverPosition;
+  }, [driverPosition, routeCoords]);
 
   // Fetch driver profile
   useEffect(() => {
@@ -102,6 +123,7 @@ function DriverPage() {
       console.error("Could not decode token", e);
     }
   }, []);
+
   //scroll to top
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -198,6 +220,51 @@ function DriverPage() {
     }
   };
 
+  const fetchRouteCoords = async (from, to) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/ride/route`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          pickup: [from[1], from[0]],
+          destination: [to[1], to[0]],
+        }),
+      });
+      const data = await res.json();
+      const coords = data.features[0].geometry.coordinates.map(([lng, lat]) => [
+        lat,
+        lng,
+      ]);
+      setRouteCoords(coords);
+    } catch (err) {
+      console.error("Failed to fetch route coords", err);
+    }
+  };
+
+  const getBearingFromRoute = (position, coords) => {
+    if (!coords || coords.length < 2) return bearing;
+
+    let closestIndex = 0;
+    let minDist = Infinity;
+
+    coords.forEach(([lat, lng], i) => {
+      const d = Math.sqrt(
+        Math.pow(lat - position[0], 2) + Math.pow(lng - position[1], 2),
+      );
+      if (d < minDist) {
+        minDist = d;
+        closestIndex = i;
+      }
+    });
+
+    const nextIndex = Math.min(closestIndex + 1, coords.length - 1);
+    return calculateBearing(coords[closestIndex], coords[nextIndex]);
+  };
+
   const acceptRide = async () => {
     if (!pendingRide) return;
     try {
@@ -213,6 +280,15 @@ function DriverPage() {
         setPendingRide(null);
         socket.emit("rideRoom", rideId);
         showToast("Ride accepted!", "success");
+
+        // Fetch route from driver to pickup
+        if (driverPosition && data.ride.pickup?.coordinates) {
+          const pickup = [
+            data.ride.pickup.coordinates[1],
+            data.ride.pickup.coordinates[0],
+          ];
+          fetchRouteCoords(driverPosition, pickup);
+        }
       } else {
         showToast(data.message || "Could not accept ride", "error");
         setPendingRide(null);
@@ -221,14 +297,6 @@ function DriverPage() {
       console.error("Accept failed", err);
     }
   };
-
-  useEffect(() => {
-    if (driverPosition && prevPositionRef.current) {
-      const angle = calculateBearing(prevPositionRef.current, driverPosition);
-      setBearing(angle);
-    }
-    prevPositionRef.current = driverPosition;
-  }, [driverPosition]);
 
   const completeRide = async () => {
     if (!activeRide) return;
@@ -240,6 +308,7 @@ function DriverPage() {
       });
       if (res.ok) {
         setActiveRide(null);
+        setRouteCoords([]); // clear route
         showToast("Ride completed!", "success");
       } else {
         const data = await res.json();
@@ -352,6 +421,15 @@ function DriverPage() {
               <Marker position={destCoords}>
                 <Popup>Destination</Popup>
               </Marker>
+            )}
+
+            {routeCoords.length > 1 && (
+              <Polyline
+                positions={routeCoords}
+                color="#1a56db"
+                weight={5}
+                opacity={0.85}
+              />
             )}
           </MapContainer>
         ) : (
