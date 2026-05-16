@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import ReactLeafletTrackingMarker from "react-leaflet-tracking-marker";
 import { useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import socket from "../socket";
@@ -19,6 +18,32 @@ function LiveCenter({ position }) {
   return null;
 }
 
+function PulsingCircle({ position }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!position) return;
+
+    const el = document.createElement("div");
+    el.className = "pulse-ring";
+
+    const marker = L.marker(position, {
+      icon: L.divIcon({
+        className: "",
+        html: el.outerHTML,
+        iconSize: [200, 200],
+        iconAnchor: [100, 100],
+      }),
+      interactive: false,
+      zIndexOffset: -1,
+    }).addTo(map);
+
+    return () => map.removeLayer(marker);
+  }, [position, map]);
+
+  return null;
+}
+
 function DriverPage() {
   const [driverPosition, setDriverPosition] = useState(null);
   const [isOnline, setIsOnline] = useState(false);
@@ -31,6 +56,23 @@ function DriverPage() {
   const locationWatcher = useRef(null);
   const locationInterval = useRef(null);
   const prevPositionRef = useRef(null);
+  const [bearing, setBearing] = useState(0);
+
+  function calculateBearing(prev, next) {
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const toDeg = (rad) => (rad * 180) / Math.PI;
+
+    const dLng = toRad(next[1] - prev[1]);
+    const lat1 = toRad(prev[0]);
+    const lat2 = toRad(next[0]);
+
+    const y = Math.sin(dLng) * Math.cos(lat2);
+    const x =
+      Math.cos(lat1) * Math.sin(lat2) -
+      Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+  }
 
   // Fetch driver profile
   useEffect(() => {
@@ -180,36 +222,12 @@ function DriverPage() {
     }
   };
 
-  function PulsingCircle({ position }) {
-    const map = useMap();
-
-    useEffect(() => {
-      if (!position) return;
-
-      const el = document.createElement("div");
-      el.className = "pulse-ring";
-
-      const marker = L.marker(position, {
-        icon: L.divIcon({
-          className: "",
-          html: el.outerHTML,
-          iconSize: [200, 200],
-          iconAnchor: [100, 100],
-        }),
-        interactive: false,
-        zIndexOffset: -1,
-      }).addTo(map);
-
-      return () => map.removeLayer(marker);
-    }, [position, map]);
-
-    return null;
-  }
-
   useEffect(() => {
-    if (driverPosition) {
-      prevPositionRef.current = driverPosition;
+    if (driverPosition && prevPositionRef.current) {
+      const angle = calculateBearing(prevPositionRef.current, driverPosition);
+      setBearing(angle);
     }
+    prevPositionRef.current = driverPosition;
   }, [driverPosition]);
 
   const completeRide = async () => {
@@ -256,6 +274,8 @@ function DriverPage() {
     display: flex;
     align-items: center;
     justify-content: center;
+    transform: rotate(${bearing}deg);
+    transition: transform 0.8s ease;
   ">
     <img src="https://res.cloudinary.com/dkalpzvt0/image/upload/v1778893145/vecteezy_white-suv-on-transparent-background-3d-rendering_25309495_ev3bhe.webp" style="width: 44px; height: 44px; object-fit: contain;"/>
   </div>`,
