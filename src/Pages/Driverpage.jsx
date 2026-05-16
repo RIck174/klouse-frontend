@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import ReactLeafletTrackingMarker from "react-leaflet-tracking-marker";
 import { useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import socket from "../socket";
@@ -25,9 +26,11 @@ function DriverPage() {
   const [activeRide, setActiveRide] = useState(null);
   const [profile, setProfile] = useState(null);
   const [toast, setToast] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const locationWatcher = useRef(null);
   const locationInterval = useRef(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const prevPositionRef = useRef(null);
 
   // Fetch driver profile
   useEffect(() => {
@@ -203,6 +206,12 @@ function DriverPage() {
     return null;
   }
 
+  useEffect(() => {
+    if (driverPosition) {
+      prevPositionRef.current = driverPosition;
+    }
+  }, [driverPosition]);
+
   const completeRide = async () => {
     if (!activeRide) return;
     try {
@@ -306,9 +315,13 @@ function DriverPage() {
               detectRetina={true}
             />
             <LiveCenter position={driverPosition} />
-            <Marker position={driverPosition} icon={carIcon}>
-              <Popup>You are here</Popup>
-            </Marker>
+            <ReactLeafletTrackingMarker
+              icon={carIcon}
+              position={driverPosition}
+              previousPosition={prevPositionRef.current || driverPosition}
+              duration={1000}
+              keepAtCenter={false}
+            />
 
             {isOnline && !activeRide && driverPosition && (
               <PulsingCircle position={driverPosition} />
