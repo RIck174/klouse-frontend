@@ -140,7 +140,6 @@ function Rides() {
             zoomOffset={-1}
             detectRetina={true}
           />
-          <Marker position={userPosition} />
           {pickupLatLng && rideStatus !== "inProgress" && (
             <Marker position={pickupLatLng} />
           )}
