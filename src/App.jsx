@@ -124,6 +124,14 @@ function App() {
             </PRoutes>
           }
         />
+        <Route
+          path="/earnings"
+          element={
+            <PRoutes>
+              <EarningsPage />
+            </PRoutes>
+          }
+        />
       </Routes>
     </Router>
   );

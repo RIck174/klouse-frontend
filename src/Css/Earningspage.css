@@ -1,0 +1,282 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+.earnings-page {
+    min-height: 100vh;
+    background: #f8faff;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.earnings-loading {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.searching-spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #1a56db;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.earnings-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 14px;
+    z-index: 1000;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+}
+
+.earnings-menu-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f172a;
+    border-radius: 12px;
+}
+
+.earnings-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+
+.earnings-content {
+    padding: 80px 16px 100px;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.earnings-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.earnings-stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 18px;
+    border: 1px solid rgba(26, 86, 219, 0.08);
+    box-shadow: 0 2px 8px rgba(26, 86, 219, 0.05);
+}
+
+.earnings-stat-primary {
+    background: #1a56db;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.earnings-stat-icon {
+    width: 52px;
+    height: 52px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.earnings-stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.earnings-stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.earnings-stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -1px;
+}
+
+.earnings-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.earnings-stats-row .earnings-stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.earnings-stats-row .earnings-stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.earnings-stat-value-sm {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1a56db;
+}
+
+.earnings-filters {
+    display: flex;
+    gap: 8px;
+}
+
+.earnings-filter-tab {
+    padding: 8px 20px;
+    border-radius: 50px;
+    border: 1.5px solid #e2e8f0;
+    background: white;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.earnings-filter-active {
+    background: #1a56db;
+    border-color: #1a56db;
+    color: white;
+    box-shadow: 0 4px 12px rgba(26, 86, 219, 0.25);
+}
+
+.earnings-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 4px;
+}
+
+.earnings-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 60px 0;
+    color: #cbd5e1;
+}
+
+.earnings-empty i {
+    font-size: 48px;
+    color: #bfdbfe;
+}
+
+.earnings-empty p {
+    font-size: 14px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.earnings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.earnings-ride-card {
+    background: white;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid rgba(26, 86, 219, 0.06);
+    box-shadow: 0 2px 8px rgba(26, 86, 219, 0.04);
+}
+
+.earnings-ride-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f0fdf4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #16a34a;
+    flex-shrink: 0;
+}
+
+.earnings-ride-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.earnings-ride-destination {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.earnings-ride-date {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.earnings-ride-fare {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #16a34a;
+    white-space: nowrap;
+    flex-shrink: 0;
+}

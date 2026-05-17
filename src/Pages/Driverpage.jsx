@@ -13,7 +13,7 @@ import "../Css/Driverpage.css";
 import "boxicons/css/boxicons.min.css";
 import Sidebar from "../Components/Sidebar";
 import L from "leaflet";
-
+import { useNavigate } from "react-router-dom";
 const API = import.meta.env.VITE_API_URL;
 
 function LiveCenter({ position }) {
@@ -51,6 +51,7 @@ function PulsingCircle({ position }) {
 }
 
 function DriverPage() {
+  const navigate = useNavigate();
   const [driverPosition, setDriverPosition] = useState(null);
   const [isOnline, setIsOnline] = useState(false);
   const [pendingRide, setPendingRide] = useState(null);
@@ -59,7 +60,9 @@ function DriverPage() {
   const [toast, setToast] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [routeCoords, setRouteCoords] = useState([]);
+  const [countdown, setCountdown] = useState(20);
 
+  const countdownRef = useRef(null);
   const locationWatcher = useRef(null);
   const locationInterval = useRef(null);
   const prevPositionRef = useRef(null);
@@ -137,6 +140,8 @@ function DriverPage() {
   useEffect(() => {
     socket.on("newRideRequest", (data) => {
       setPendingRide(data);
+      startCountdown();
+      playRequestSound();
       showToast("New ride request!", "info");
     });
 
@@ -267,6 +272,8 @@ function DriverPage() {
 
   const acceptRide = async () => {
     if (!pendingRide) return;
+    clearInterval(countdownRef.current);
+    setCountdown(20);
     try {
       const token = localStorage.getItem("token");
       const rideId = pendingRide.rideId || pendingRide._id;
@@ -411,6 +418,45 @@ function DriverPage() {
     iconAnchor: [22, 22],
   });
 
+  const playSoundRequest = () => {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const beep = (freq, start, duration) => {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.frequency.value = freq;
+      oscillator.type = "sine";
+      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime + start);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioCtx.currentTime + start + duration,
+      );
+      oscillator.start(audioCtx.currentTime + start);
+      oscillator.stop(audioCtx.currentTime + start + duration);
+    };
+
+    beep(880, 0, 0.15);
+    beep(660, 0.2, 0.15);
+    beep(880, 0.4, 0.3);
+  };
+
+  const startCountdown = () => {
+    setCountdown(20);
+    clearInterval(countdownRef.current);
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownRef.current);
+          setPendingRide(null); // auto decline - no API call
+          return 20;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   return (
     <div className="driver-page">
       {/* ── Sidebar ── */}
@@ -519,69 +565,136 @@ function DriverPage() {
             <div className="waiting-spinner" />
             <p>Waiting for ride requests...</p>
             <span>You'll be notified when a rider is nearby</span>
+            <button
+              className="earnings-shortcut-btn"
+              onClick={() => navigate("/earnings")}
+            >
+              <i className="bx bxs-wallet" /> View Earnings
+            </button>
           </div>
         )}
 
         {/* Pending ride request */}
         {pendingRide && !activeRide && (
-          <div className="ride-request-card">
-            <div className="request-header">
-              <div className="request-ping" />
-              <span className="request-title">New Ride Request</span>
+          <div className="ride-request-float">
+            {/* Countdown ring */}
+            <div className="request-countdown-wrap">
+              <svg className="countdown-svg" viewBox="0 0 44 44">
+                <circle
+                  cx="22"
+                  cy="22"
+                  r="18"
+                  fill="none"
+                  stroke="#e2e8f0"
+                  strokeWidth="3"
+                />
+                <circle
+                  cx="22"
+                  cy="22"
+                  r="18"
+                  fill="none"
+                  stroke="#1a56db"
+                  strokeWidth="3"
+                  strokeDasharray={`${2 * Math.PI * 18}`}
+                  strokeDashoffset={`${2 * Math.PI * 18 * (1 - countdown / 20)}`}
+                  strokeLinecap="round"
+                  transform="rotate(-90 22 22)"
+                  style={{ transition: "stroke-dashoffset 1s linear" }}
+                />
+              </svg>
+              <span className="countdown-number">{countdown}</span>
             </div>
-            <div className="request-details">
-              <div className="request-row">
-                <i className="bx bxs-circle pickup-col" />
-                <span>Pickup nearby</span>
-                <span
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: "11px",
-                    color: "#94a3b8",
-                    background: "#f1f5f9",
-                    padding: "2px 8px",
-                    borderRadius: "20px",
-                  }}
-                >
+
+            <div className="request-float-content">
+              {/* Header */}
+              <div className="request-float-header">
+                <div className="request-ping" />
+                <span className="request-title">New Ride Request</span>
+                <span className="request-float-badge">
                   {pendingRide?.vehicleType}
                 </span>
               </div>
-              <div className="request-divider-line" />
-              <div className="request-row">
-                <i className="bx bxs-map dest-col" />
-                <span>{pendingRide?.destinationName || "Destination set"}</span>
-              </div>
-              {pendingRide?.notes ? (
-                <div className="request-row">
-                  <i className="bx bxs-note" style={{ color: "#94a3b8" }} />
-                  <span style={{ color: "#64748b", fontSize: "12px" }}>
-                    {pendingRide.notes}
+
+              {/* Details */}
+              <div className="request-float-details">
+                <div className="request-float-row">
+                  <i
+                    className="bx bxs-circle"
+                    style={{ color: "#1a56db", fontSize: 12 }}
+                  />
+                  <span>Pickup nearby</span>
+                  {driverPosition && pendingRide?.pickup && (
+                    <span className="request-float-distance">
+                      {Math.sqrt(
+                        Math.pow(
+                          (pendingRide.pickup.coordinates[1] -
+                            driverPosition[0]) *
+                            111,
+                          2,
+                        ) +
+                          Math.pow(
+                            (pendingRide.pickup.coordinates[0] -
+                              driverPosition[1]) *
+                              111,
+                            2,
+                          ),
+                      ).toFixed(1)}{" "}
+                      km away
+                    </span>
+                  )}
+                </div>
+                <div className="request-float-divider" />
+                <div className="request-float-row">
+                  <i
+                    className="bx bxs-map"
+                    style={{ color: "#0f172a", fontSize: 12 }}
+                  />
+                  <span>
+                    {pendingRide?.destinationName || "Destination set"}
+                  </span>
+                  <span className="request-float-fare">
+                    GH₵ {pendingRide?.fare?.toFixed(2) || "—"}
                   </span>
                 </div>
-              ) : null}
-            </div>
-            <div className="request-actions">
-              <button
-                className="btn-decline"
-                onClick={async () => {
-                  try {
-                    const token = localStorage.getItem("token");
-                    const rideId = pendingRide.rideId || pendingRide._id;
-                    await fetch(`${API}/ride/decline/${rideId}`, {
-                      method: "POST",
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
-                  } catch (err) {
-                    console.error("Failed to decline ride", err);
-                  }
-                  setPendingRide(null);
-                }}
-              >
-                Decline
-              </button>
-              <button className="btn-accept" onClick={acceptRide}>
-                Accept Ride
-              </button>
+                {pendingRide?.notes && (
+                  <div className="request-float-row">
+                    <i
+                      className="bx bxs-note"
+                      style={{ color: "#94a3b8", fontSize: 12 }}
+                    />
+                    <span style={{ color: "#64748b", fontSize: "12px" }}>
+                      {pendingRide.notes}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="request-float-actions">
+                <button
+                  className="btn-decline"
+                  onClick={async () => {
+                    clearInterval(countdownRef.current);
+                    setCountdown(20);
+                    try {
+                      const token = localStorage.getItem("token");
+                      const rideId = pendingRide.rideId || pendingRide._id;
+                      await fetch(`${API}/ride/decline/${rideId}`, {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${token}` },
+                      });
+                    } catch (err) {
+                      console.error("Failed to decline ride", err);
+                    }
+                    setPendingRide(null);
+                  }}
+                >
+                  Decline
+                </button>
+                <button className="btn-accept" onClick={acceptRide}>
+                  Accept Ride
+                </button>
+              </div>
             </div>
           </div>
         )}
