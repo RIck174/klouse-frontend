@@ -9,6 +9,7 @@ import DriverPage from "./Pages/Driverpage";
 import DriverSignup from "./Pages/DriverSignup";
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import EarningsPage from "./Pages/Earningspage";
 
 const PRoutes = ({ children }) => {
   const token = localStorage.getItem("token");
